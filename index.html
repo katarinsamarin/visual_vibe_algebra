@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Визуализации по математике</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#F5F7FC; --panel:#FFFFFF; --ink:#141B2B; --muted:#5C6879;
+  --line:#DCE2EE; --accent:#3A3FB8; --accent-2:#A8600A; --accent-3:#0D7A84;
+  --shadow:0 1px 2px rgba(20,27,43,.05),0 8px 24px rgba(20,27,43,.06);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0D111D; --panel:#151B2B; --ink:#E7EBF6; --muted:#96A1B6;
+    --line:#242D42; --accent:#8C90FF; --accent-2:#E0A651; --accent-3:#4FC4CF;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px rgba(0,0,0,.35);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0D111D; --panel:#151B2B; --ink:#E7EBF6; --muted:#96A1B6;
+  --line:#242D42; --accent:#8C90FF; --accent-2:#E0A651; --accent-3:#4FC4CF;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:"IBM Plex Sans",system-ui,sans-serif; font-size:16px; line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:900px; margin:0 auto; padding:64px 22px 100px}
+
+header{margin-bottom:16px}
+.eyebrow{
+  font-family:"IBM Plex Mono",monospace; font-size:12px; letter-spacing:.13em;
+  text-transform:uppercase; color:var(--accent); margin:0 0 14px;
+}
+h1{
+  font-family:Spectral,Georgia,serif; font-weight:600;
+  font-size:clamp(30px,5.4vw,44px); line-height:1.12; margin:0 0 14px;
+  letter-spacing:-.01em; text-wrap:balance;
+}
+.lede{font-size:18px; color:var(--muted); margin:0; max-width:58ch}
+
+.meta{
+  display:flex; flex-wrap:wrap; gap:8px 20px; margin:26px 0 40px;
+  font-family:"IBM Plex Mono",monospace; font-size:12.5px; color:var(--muted);
+  padding-top:18px; border-top:1px solid var(--line);
+}
+.meta b{color:var(--ink); font-weight:500}
+
+.grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:18px}
+.card{
+  display:flex; flex-direction:column; background:var(--panel);
+  border:1px solid var(--line); border-radius:14px; padding:20px 20px 18px;
+  box-shadow:var(--shadow); text-decoration:none; color:inherit;
+  transition:transform .16s ease, border-color .16s ease;
+}
+.card:hover{transform:translateY(-2px); border-color:var(--accent)}
+.card:focus-visible{outline:2px solid var(--accent); outline-offset:3px}
+.card .tag{
+  font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.1em;
+  text-transform:uppercase; margin:0 0 10px;
+}
+.card h2{
+  font-family:Spectral,Georgia,serif; font-weight:600; font-size:20px;
+  line-height:1.25; margin:0 0 8px;
+}
+.card p{margin:0 0 14px; font-size:14.5px; color:var(--muted); flex:1}
+.card .foot{
+  display:flex; justify-content:space-between; align-items:baseline;
+  font-family:"IBM Plex Mono",monospace; font-size:11.5px; color:var(--muted);
+  padding-top:12px; border-top:1px solid var(--line);
+}
+.card .go{color:var(--accent)}
+
+.soon{opacity:.62; border-style:dashed; cursor:default}
+.soon:hover{transform:none; border-color:var(--line)}
+
+footer{
+  margin-top:48px; padding-top:20px; border-top:1px solid var(--line);
+  font-size:14px; color:var(--muted);
+}
+footer code{
+  font-family:"IBM Plex Mono",monospace; font-size:13px;
+  background:var(--panel); border:1px solid var(--line); border-radius:5px; padding:1px 6px;
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <p class="eyebrow">Интерактивные материалы</p>
+  <h1>Визуализации по математике</h1>
+  <p class="lede">Интерактивные разборы к курсу алгебры: то, что проще один раз покрутить руками, чем прочитать три раза.</p>
+</header>
+
+<div class="meta">
+  <span>обновлено <b id="upd">—</b></span>
+  <span>материалов: <b id="cnt">—</b></span>
+  <span>всё открывается в браузере, ничего ставить не нужно</span>
+</div>
+
+<div class="grid" id="grid"></div>
+
+<footer>
+  <p>Как добавить новую визуализацию: положите файл в <code>pages/</code> и допишите одну запись в массив <code>ITEMS</code> в начале <code>index.html</code>. Больше ничего менять не нужно — карточка, счётчик и дата обновления соберутся сами.</p>
+</footer>
+
+</div>
+
+<script>
+/* ─────────────────────────────────────────────────────────────
+   Список материалов. Чтобы добавить новый — допишите объект:
+   {
+     file:  "pages/имя-файла.html",   // или null, если ещё не готово
+     tag:   "Билеты 55–66",           // короткая метка сверху карточки
+     color: "a" | "b" | "c",          // цвет метки: синий / охра / бирюза
+     title: "Название",
+     desc:  "Одно-два предложения о том, что внутри.",
+     date:  "2026-08-29"              // дата последнего обновления
+   }
+   ───────────────────────────────────────────────────────────── */
+const ITEMS = [
+  {
+    file: "pages/complex-rotation.html",
+    tag: "Билеты 37–39",
+    color: "a",
+    title: "Повороты на комплексной плоскости",
+    desc: "Почему i стоит при синусе, как умножение поворачивает плоскость, откуда берётся формула Муавра и чем она отличается от разложения по базису. Пять интерактивных картинок с ползунками.",
+    date: "2026-08-29"
+  },
+  {
+    file: "pages/polynomials-map.html",
+    tag: "Билеты 55–66",
+    color: "c",
+    title: "Карта зависимостей: алгебра многочленов",
+    desc: "Граф из 30 утверждений и 55 подписанных связей. Клик по узлу открывает формулировку, набросок доказательства и списки «опирается на» и «используется в».",
+    date: "2026-08-29"
+  }
+];
+
+const COLORS = {a:"var(--accent)", b:"var(--accent-2)", c:"var(--accent-3)"};
+const MONTHS = ["января","февраля","марта","апреля","мая","июня",
+                "июля","августа","сентября","октября","ноября","декабря"];
+const human = iso => {
+  const [y,m,d] = iso.split("-").map(Number);
+  return `${d} ${MONTHS[m-1]} ${y}`;
+};
+
+const grid = document.getElementById("grid");
+ITEMS.forEach(it => {
+  const ready = Boolean(it.file);
+  const card = document.createElement(ready ? "a" : "div");
+  card.className = "card" + (ready ? "" : " soon");
+  if (ready) card.href = it.file;
+  card.innerHTML = `
+    <p class="tag" style="color:${COLORS[it.color] || "var(--muted)"}">${it.tag}</p>
+    <h2>${it.title}</h2>
+    <p>${it.desc}</p>
+    <div class="foot">
+      <span>${human(it.date)}</span>
+      <span class="go">${ready ? "открыть →" : "в работе"}</span>
+    </div>`;
+  grid.appendChild(card);
+});
+
+document.getElementById("cnt").textContent = ITEMS.filter(i => i.file).length;
+const latest = ITEMS.map(i => i.date).sort().pop();
+document.getElementById("upd").textContent = latest ? human(latest) : "—";
+</script>
+</body>
+</html>

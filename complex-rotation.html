@@ -1,0 +1,630 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Повороты на комплексной плоскости</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+
+<style>
+:root{
+  --bg:#F5F7FC; --panel:#FFFFFF; --ink:#141B2B; --muted:#5C6879;
+  --line:#DCE2EE; --grid:#E8ECF5; --axis:#A9B4C7;
+  --accent:#3A3FB8; --accent-2:#A8600A; --accent-3:#0D7A84;
+  --ghost:rgba(58,63,184,.28);
+  --shadow:0 1px 2px rgba(20,27,43,.05),0 8px 24px rgba(20,27,43,.06);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0D111D; --panel:#151B2B; --ink:#E7EBF6; --muted:#96A1B6;
+    --line:#242D42; --grid:#1A2233; --axis:#465370;
+    --accent:#8C90FF; --accent-2:#E0A651; --accent-3:#4FC4CF;
+    --ghost:rgba(140,144,255,.30);
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px rgba(0,0,0,.35);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0D111D; --panel:#151B2B; --ink:#E7EBF6; --muted:#96A1B6;
+  --line:#242D42; --grid:#1A2233; --axis:#465370;
+  --accent:#8C90FF; --accent-2:#E0A651; --accent-3:#4FC4CF;
+  --ghost:rgba(140,144,255,.30);
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px rgba(0,0,0,.35);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:"IBM Plex Sans",system-ui,sans-serif;
+  font-size:17px; line-height:1.62;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:760px; margin:0 auto; padding:56px 22px 96px}
+
+header{margin-bottom:44px}
+.eyebrow{
+  font-family:"IBM Plex Mono",monospace; font-size:12px; letter-spacing:.13em;
+  text-transform:uppercase; color:var(--accent); margin:0 0 14px;
+}
+h1{
+  font-family:Spectral,Georgia,serif; font-weight:600;
+  font-size:clamp(32px,6vw,46px); line-height:1.12; margin:0 0 16px;
+  text-wrap:balance; letter-spacing:-.01em;
+}
+.lede{font-size:19px; color:var(--muted); margin:0; max-width:60ch}
+
+section{margin:56px 0 0}
+h2{
+  font-family:Spectral,Georgia,serif; font-weight:600;
+  font-size:26px; line-height:1.25; margin:0 0 6px; text-wrap:balance;
+}
+h2 .num{
+  font-family:"IBM Plex Mono",monospace; font-size:13px; font-weight:400;
+  color:var(--accent); display:block; margin-bottom:8px; letter-spacing:.08em;
+}
+p{margin:0 0 16px; max-width:66ch}
+strong{font-weight:600}
+em{font-style:italic; color:var(--muted)}
+
+.m{font-family:"IBM Plex Mono",monospace; font-size:.94em; font-variant-numeric:tabular-nums}
+.eq{
+  font-family:"IBM Plex Mono",monospace; font-size:15px;
+  background:var(--panel); border:1px solid var(--line); border-radius:8px;
+  padding:14px 16px; margin:18px 0; overflow-x:auto; box-shadow:var(--shadow);
+  line-height:1.9;
+}
+
+.fig{
+  background:var(--panel); border:1px solid var(--line); border-radius:14px;
+  padding:18px; margin:24px 0; box-shadow:var(--shadow);
+}
+canvas{width:100%; height:auto; display:block; touch-action:none}
+.controls{display:flex; flex-wrap:wrap; gap:16px 24px; margin-top:16px; align-items:center}
+.ctl{display:flex; flex-direction:column; gap:5px; flex:1 1 190px; min-width:170px}
+.ctl label{
+  font-family:"IBM Plex Mono",monospace; font-size:12px; color:var(--muted);
+  letter-spacing:.05em; display:flex; justify-content:space-between; gap:10px;
+}
+.ctl label b{color:var(--ink); font-weight:500; font-variant-numeric:tabular-nums}
+input[type=range]{
+  width:100%; accent-color:var(--accent); height:22px; margin:0; cursor:pointer;
+}
+input[type=range]:focus-visible{outline:2px solid var(--accent); outline-offset:3px; border-radius:4px}
+.seg{display:flex; gap:0; border:1px solid var(--line); border-radius:8px; overflow:hidden}
+.seg button{
+  font-family:"IBM Plex Sans",sans-serif; font-size:13px; font-weight:500;
+  padding:7px 14px; border:0; background:var(--panel); color:var(--muted); cursor:pointer;
+}
+.seg button[aria-pressed="true"]{background:var(--accent); color:#fff}
+.seg button:focus-visible{outline:2px solid var(--accent); outline-offset:-2px}
+.readout{
+  font-family:"IBM Plex Mono",monospace; font-size:13.5px; color:var(--ink);
+  margin-top:14px; padding-top:14px; border-top:1px solid var(--line);
+  font-variant-numeric:tabular-nums; line-height:1.8;
+}
+.readout span{color:var(--muted)}
+.cap{font-size:14px; color:var(--muted); margin:10px 0 0; line-height:1.5}
+
+.key{display:flex; flex-wrap:wrap; gap:6px 18px; margin-top:12px}
+.key i{
+  font-style:normal; font-family:"IBM Plex Mono",monospace; font-size:12px;
+  color:var(--muted); display:flex; align-items:center; gap:7px;
+}
+.key i::before{content:""; width:14px; height:3px; border-radius:2px; background:currentColor}
+.key .k1::before{background:var(--accent)}
+.key .k2::before{background:var(--accent-2)}
+.key .k3::before{background:var(--accent-3)}
+
+.callout{
+  border-left:3px solid var(--accent); padding:2px 0 2px 18px; margin:24px 0;
+  color:var(--ink);
+}
+.callout p:last-child{margin-bottom:0}
+
+@media (prefers-reduced-motion: no-preference){
+  .fig{transition:border-color .2s}
+}
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+
+<header>
+  <p class="eyebrow">Билеты 37 — 39</p>
+  <h1>Повороты на комплексной плоскости</h1>
+  <p class="lede">Почему в записи <span class="m">cos φ + i·sin φ</span> синус умножается на i, что при этом происходит с точкой на плоскости и откуда берётся формула Муавра.</p>
+</header>
+
+<section>
+  <h2><span class="num">01</span>i при синусе — это не множитель, а ось</h2>
+
+  <p>Главное недоразумение снимается так: <strong>i·sin φ означает «sin φ единиц по вертикальной оси»</strong>. Синус ни на что не умножается в привычном смысле — он просто координата, а i указывает, вдоль какой оси её откладывать.</p>
+
+  <p>Вспомните билет 37: ℂ — двумерное пространство над ℝ с базисом <span class="m">1, i</span>. Любое число единственным образом записывается как <span class="m">a·1 + b·i</span>, то есть a шагов вдоль первого базисного вектора и b шагов вдоль второго. Точка на единичной окружности имеет координаты <span class="m">(cos φ, sin φ)</span> — это школьное определение синуса и косинуса. Подставляем координаты в разложение по базису:</p>
+
+  <div class="eq">z = (cos φ)·1 + (sin φ)·i = cos φ + i·sin φ</div>
+
+  <p>Сравните с записью вектора в линейной алгебре: <span class="m">v = 3e₁ + 5e₂</span>. Никто не спрашивает, почему пятёрка «умножается на e₂» — это координата при базисном векторе. Здесь ровно то же самое, только второй базисный вектор зовут i.</p>
+
+  <div class="fig">
+    <canvas id="cv1" aria-label="Единичная окружность: точка cos φ + i sin φ с проекциями на оси"></canvas>
+    <div class="controls">
+      <div class="ctl">
+        <label for="phi1">угол φ <b id="phi1v">50°</b></label>
+        <input type="range" id="phi1" min="0" max="360" step="1" value="50">
+      </div>
+    </div>
+    <div class="key">
+      <i class="k1">z = cos φ + i·sin φ</i>
+      <i class="k2">cos φ · 1</i>
+      <i class="k3">sin φ · i</i>
+    </div>
+    <div class="readout" id="out1"></div>
+    <p class="cap">Тяните ползунок: точка едет по окружности, а её координаты — это в точности косинус (по горизонтали) и синус (по вертикали).</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">02</span>Умножение на i — четверть оборота</h2>
+
+  <p>Умножение на фиксированное число — линейный оператор на плоскости, значит у него есть матрица в базисе <span class="m">(1, i)</span>. Для i считаем образы базисных векторов: <span class="m">i·1 = i</span> и <span class="m">i·i = −1</span>. Матрица получается такой:</p>
+
+  <div class="eq">J = ( 0  −1 )<br>&nbsp;&nbsp;&nbsp;&nbsp;( 1&nbsp;&nbsp;&nbsp;0 )&nbsp;&nbsp;&nbsp;— поворот на 90°</div>
+
+  <p>Соотношение <span class="m">i² = −1</span>, ради которого мы факторизовали ℝ[t] по <span class="m">t² + 1</span>, читается теперь геометрически: <strong>два поворота на 90° дают поворот на 180°, то есть умножение на −1</strong>. Алгебра и геометрия говорят здесь одно и то же.</p>
+
+  <div class="fig">
+    <canvas id="cv2" aria-label="Последовательные умножения на i поворачивают точку на 90 градусов"></canvas>
+    <div class="controls">
+      <div class="ctl">
+        <label for="phi2">аргумент z <b id="phi2v">25°</b></label>
+        <input type="range" id="phi2" min="0" max="360" step="1" value="25">
+      </div>
+      <div class="ctl">
+        <label for="r2">модуль |z| <b id="r2v">1,00</b></label>
+        <input type="range" id="r2" min="30" max="130" step="1" value="100">
+      </div>
+    </div>
+    <div class="readout" id="out2"></div>
+    <p class="cap">Четыре умножения на i возвращают точку на место: i⁴ = 1. Модуль при этом не меняется — поворот ничего не растягивает.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">03</span>Формула Муавра — это повтор поворота</h2>
+
+  <p>Если умножение на z поворачивает на угол φ и растягивает в |z| раз, то умножение на z дважды поворачивает на 2φ и растягивает в |z|² раз. Отсюда без вычислений:</p>
+
+  <div class="eq">(cos φ + i·sin φ)ⁿ = cos nφ + i·sin nφ</div>
+
+  <p>Слева — «повторить поворот n раз», справа — «повернуть сразу на nφ». Это одно движение, записанное двумя способами. Все формулы для кратных углов выпадают отсюда сами: раскройте левую часть при n = 2 и сравните вещественные части — получите <span class="m">cos 2φ = cos²φ − sin²φ</span>, а мнимые дадут <span class="m">sin 2φ = 2 sin φ cos φ</span>.</p>
+
+  <p>Возьмите модуль не равный единице — и цепочка степеней уйдёт по спирали внутрь или наружу. Это видно на картинке ниже: <strong>углы складываются, модули перемножаются</strong>.</p>
+
+  <div class="fig">
+    <canvas id="cv3" aria-label="Степени комплексного числа и корни из единицы"></canvas>
+    <div class="controls">
+      <div class="ctl">
+        <label for="phi3">угол φ <b id="phi3v">40°</b></label>
+        <input type="range" id="phi3" min="5" max="180" step="1" value="40">
+      </div>
+      <div class="ctl">
+        <label for="r3">модуль |z| <b id="r3v">1,00</b></label>
+        <input type="range" id="r3" min="70" max="130" step="1" value="100">
+      </div>
+      <div class="ctl">
+        <label for="n3">степеней n <b id="n3v">6</b></label>
+        <input type="range" id="n3" min="1" max="14" step="1" value="6">
+      </div>
+    </div>
+    <div class="readout" id="out3"></div>
+    <p class="cap">Каждый следующий отрезок повёрнут на тот же угол φ относительно предыдущего. При |z| = 1 цепочка идёт по окружности, иначе закручивается в спираль.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">04</span>Корни из единицы — правильный многоугольник</h2>
+
+  <p>Уравнение <span class="m">zⁿ = 1</span> на языке поворотов звучит так: найти поворот, который при n-кратном повторении даёт полный оборот. Ответ очевиден — поворот на <span class="m">360°/n</span>, а также на его кратные. Получается n точек, равномерно расставленных по окружности: вершины правильного n-угольника.</p>
+
+  <div class="eq">μₙ = { cos(2πk/n) + i·sin(2πk/n) : k = 0, 1, …, n−1 }</div>
+
+  <p>Это циклическая группа порядка n, порождённая поворотом на 2π/n — билет 39. Мнимая единица здесь появляется как <strong>примитивный корень четвёртой степени</strong>: четыре поворота по 90° замыкают круг, и <span class="m">μ₄ = {1, i, −1, −i}</span> — вершины квадрата.</p>
+
+  <div class="fig">
+    <canvas id="cv4" aria-label="Корни n-й степени из единицы как вершины правильного многоугольника"></canvas>
+    <div class="controls">
+      <div class="ctl">
+        <label for="n4">степень n <b id="n4v">4</b></label>
+        <input type="range" id="n4" min="2" max="16" step="1" value="4">
+      </div>
+      <div class="seg" role="group" aria-label="Что показывать">
+        <button id="b4a" aria-pressed="true">все корни</button>
+        <button id="b4b" aria-pressed="false">степени ζ</button>
+      </div>
+    </div>
+    <div class="readout" id="out4"></div>
+    <p class="cap">Режим «степени ζ» обходит вершины по очереди: ζ, ζ², … , ζⁿ = 1. Так видно, что образующая порождает всю группу.</p>
+  </div>
+
+  <div class="callout">
+    <p>Отсюда же понятно, почему в ℝ корня из −1 нет. На прямой поворотов всего два — тождественный и отражение, и квадрат каждого равен тождественному. «Повернуть на 90°» на прямой некуда: нужна вторая размерность. Факторизация по многочлену <em>второй</em> степени её ровно и создаёт.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">05</span>Формула Эйлера — не разложение по базису</h2>
+
+  <p>Раздел 01 показывал разложение <span class="m">z = (cos φ)·1 + (sin φ)·i</span>. Важно понимать, что этот факт <strong>пустой</strong>: так раскладывается любое комплексное число, это просто запись a + bi с другими буквами. Ни поворотов, ни экспоненты в нём нет.</p>
+
+  <p>Всё содержание формулы Эйлера сидит в <strong>левой части</strong> — в том, что вообще значит e в мнимой степени. Обоснований ровно два, и оба про движение, а не про координаты:</p>
+
+  <div class="eq">E(φ)·E(ψ) = E(φ + ψ)&nbsp;&nbsp;— сложение переходит в умножение<br>E′(0) = i&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;— скорость старта равна i</div>
+
+  <p>Функция с такими свойствами — экспонента, поэтому и пишут <span class="m">e^(iφ)</span>. Первое свойство — это теорема об умножении в тригонометрической форме; заметьте, что оно про <em>умножение</em>, а базис знает только про сложение и растяжение на вещественные числа.</p>
+
+  <p>Нарисовать формулу Эйлера статической картинкой с проекциями нельзя — она про то, <strong>как точка движется</strong>. Продифференцируйте <span class="m">z(φ) = cos φ + i·sin φ</span>:</p>
+
+  <div class="eq">z′(φ) = −sin φ + i·cos φ = i·(cos φ + i·sin φ) = i·z</div>
+
+  <p>Скорость получается умножением положения на i — то есть <strong>поворотом положения на 90°</strong>. Вектор скорости всегда перпендикулярен радиусу, а его длина равна |z|. Это в точности уравнение равномерного движения по окружности, и оно же — уравнение экспоненты <span class="m">z′ = i·z</span>.</p>
+
+  <div class="fig">
+    <canvas id="cv5" aria-label="Вектор скорости движения по окружности перпендикулярен радиусу"></canvas>
+    <div class="controls">
+      <div class="ctl">
+        <label for="phi5">угол φ <b id="phi5v">50°</b></label>
+        <input type="range" id="phi5" min="0" max="360" step="1" value="50">
+      </div>
+    </div>
+    <div class="key">
+      <i class="k1">положение z</i>
+      <i class="k2">скорость z′ = i·z</i>
+    </div>
+    <div class="readout" id="out5"></div>
+    <p class="cap">Крутите угол: скорость едет вместе с точкой, оставаясь под прямым углом к радиусу. Именно это свойство, а не разложение по базису, делает cos φ + i·sin φ экспонентой.</p>
+  </div>
+</section>
+
+</div>
+
+<script>
+(function(){
+  const TAU = Math.PI*2;
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const fmt = (x,d=2) => x.toFixed(d).replace('.',',');
+
+  const planes = [];
+  function plane(canvas, draw){
+    const ctx = canvas.getContext('2d');
+    const obj = {canvas, ctx, draw};
+    planes.push(obj);
+    resize(obj);
+    return obj;
+  }
+  function resize(o){
+    const dpr = Math.min(window.devicePixelRatio||1, 2);
+    const w = o.canvas.clientWidth || 600;
+    const h = Math.round(Math.min(w*0.72, 430));
+    o.canvas.width = w*dpr; o.canvas.height = h*dpr;
+    o.canvas.style.height = h+'px';
+    o.ctx.setTransform(dpr,0,0,dpr,0,0);
+    o.w = w; o.h = h;
+  }
+  function redrawAll(){ planes.forEach(o => { o.ctx.clearRect(0,0,o.w,o.h); o.draw(o); }); }
+  window.addEventListener('resize', ()=>{ planes.forEach(resize); redrawAll(); });
+  if (window.matchMedia) window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', redrawAll);
+
+  // --- shared drawing helpers ---------------------------------------------
+  function frame(o, span){
+    const {ctx,w,h} = o;
+    const cx = w/2, cy = h/2;
+    const s = Math.min(w,h)/(2*span) * 0.86;
+    const X = x => cx + x*s, Y = y => cy - y*s;
+
+    // grid
+    ctx.strokeStyle = css('--grid'); ctx.lineWidth = 1;
+    ctx.beginPath();
+    for(let g=-Math.ceil(span); g<=Math.ceil(span); g+=0.5){
+      if (Math.abs(g)<1e-9) continue;
+      ctx.moveTo(X(g), 0); ctx.lineTo(X(g), h);
+      ctx.moveTo(0, Y(g)); ctx.lineTo(w, Y(g));
+    }
+    ctx.stroke();
+
+    // axes
+    ctx.strokeStyle = css('--axis'); ctx.lineWidth = 1.4;
+    ctx.beginPath();
+    ctx.moveTo(0, cy); ctx.lineTo(w, cy);
+    ctx.moveTo(cx, 0); ctx.lineTo(cx, h);
+    ctx.stroke();
+
+    ctx.fillStyle = css('--muted');
+    ctx.font = '12px "IBM Plex Mono", monospace';
+    ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+    ctx.fillText('Re', w-24, cy+7);
+    ctx.fillText('Im', cx+7, 6);
+    ctx.textAlign = 'center';
+    ctx.fillText('1', X(1), cy+7);
+    ctx.fillText('−1', X(-1), cy+7);
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('i', cx-7, Y(1));
+    ctx.fillText('−i', cx-7, Y(-1));
+
+    return {X, Y, cx, cy, s};
+  }
+  function circle(o, g, r, color, dash){
+    const {ctx} = o;
+    ctx.save();
+    ctx.strokeStyle = color; ctx.lineWidth = 1.4;
+    if (dash) ctx.setLineDash(dash);
+    ctx.beginPath(); ctx.arc(g.cx, g.cy, r*g.s, 0, TAU); ctx.stroke();
+    ctx.restore();
+  }
+  function vec(o, g, x, y, color, width){
+    const {ctx} = o;
+    const x1 = g.X(x), y1 = g.Y(y);
+    ctx.save();
+    ctx.strokeStyle = color; ctx.fillStyle = color;
+    ctx.lineWidth = width||2.4; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(g.cx, g.cy); ctx.lineTo(x1, y1); ctx.stroke();
+    const a = Math.atan2(y1-g.cy, x1-g.cx), L = 9;
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x1 - L*Math.cos(a-0.38), y1 - L*Math.sin(a-0.38));
+    ctx.lineTo(x1 - L*Math.cos(a+0.38), y1 - L*Math.sin(a+0.38));
+    ctx.closePath(); ctx.fill();
+    ctx.restore();
+  }
+  function dot(o, g, x, y, color, r){
+    const {ctx} = o;
+    ctx.save();
+    ctx.fillStyle = color;
+    ctx.beginPath(); ctx.arc(g.X(x), g.Y(y), r||4.5, 0, TAU); ctx.fill();
+    ctx.restore();
+  }
+  function label(o, g, x, y, text, color, dx, dy){
+    const {ctx} = o;
+    ctx.save();
+    ctx.fillStyle = color;
+    ctx.font = '500 13px "IBM Plex Mono", monospace';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(text, g.X(x)+(dx||0), g.Y(y)+(dy||0));
+    ctx.restore();
+  }
+  function arc(o, g, a0, a1, r, color, text){
+    const {ctx} = o;
+    ctx.save();
+    ctx.strokeStyle = color; ctx.lineWidth = 1.6;
+    ctx.beginPath();
+    ctx.arc(g.cx, g.cy, r*g.s, -a0, -a1, true);
+    ctx.stroke();
+    if (text){
+      const am = (a0+a1)/2;
+      ctx.fillStyle = css('--muted');
+      ctx.font = '500 13px "IBM Plex Mono", monospace';
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText(text, g.cx + Math.cos(am)*(r*g.s+15), g.cy - Math.sin(am)*(r*g.s+15));
+    }
+    ctx.restore();
+  }
+
+  // --- figure 1: decomposition --------------------------------------------
+  const phi1 = document.getElementById('phi1'), phi1v = document.getElementById('phi1v');
+  const out1 = document.getElementById('out1');
+  const p1 = plane(document.getElementById('cv1'), o => {
+    const g = frame(o, 1.45);
+    const a = +phi1.value * Math.PI/180;
+    const c = Math.cos(a), s = Math.sin(a);
+    circle(o, g, 1, css('--line'));
+
+    // projection guides
+    o.ctx.save();
+    o.ctx.strokeStyle = css('--axis'); o.ctx.setLineDash([4,4]); o.ctx.lineWidth = 1.2;
+    o.ctx.beginPath();
+    o.ctx.moveTo(g.X(c), g.Y(s)); o.ctx.lineTo(g.X(c), g.Y(0));
+    o.ctx.moveTo(g.X(c), g.Y(s)); o.ctx.lineTo(g.X(0), g.Y(s));
+    o.ctx.stroke(); o.ctx.restore();
+
+    vec(o, g, c, 0, css('--accent-2'), 3.2);
+    vec(o, g, 0, s, css('--accent-3'), 3.2);
+    vec(o, g, c, s, css('--accent'), 2.6);
+    arc(o, g, 0, a, 0.3, css('--muted'), 'φ');
+    dot(o, g, c, s, css('--accent'), 5);
+    label(o, g, c, s, 'z', css('--accent'), 16*Math.sign(c||1), -14);
+    label(o, g, c/2, 0, 'cos φ', css('--accent-2'), 0, s>0?18:-18);
+    label(o, g, 0, s/2, 'i·sin φ', css('--accent-3'), c>0?-38:38, 0);
+  });
+  function upd1(){
+    const d = +phi1.value, a = d*Math.PI/180;
+    phi1v.textContent = d+'°';
+    out1.innerHTML = '<span>cos φ =</span> '+fmt(Math.cos(a),3)+
+      '&nbsp;&nbsp;<span>sin φ =</span> '+fmt(Math.sin(a),3)+
+      '<br><span>z =</span> '+fmt(Math.cos(a),3)+' + '+fmt(Math.sin(a),3)+'·i'+
+      '&nbsp;&nbsp;<span>|z| =</span> 1,000';
+    redrawAll();
+  }
+  phi1.addEventListener('input', upd1);
+
+  // --- figure 2: multiply by i --------------------------------------------
+  const phi2 = document.getElementById('phi2'), phi2v = document.getElementById('phi2v');
+  const r2 = document.getElementById('r2'), r2v = document.getElementById('r2v');
+  const out2 = document.getElementById('out2');
+  plane(document.getElementById('cv2'), o => {
+    const g = frame(o, 1.6);
+    const a = +phi2.value*Math.PI/180, r = +r2.value/100;
+    circle(o, g, r, css('--line'), [5,5]);
+    const names = ['z','i·z','i²·z','i³·z'];
+    const cols = [css('--accent'), css('--accent-2'), css('--accent-3'), css('--muted')];
+    for(let k=3;k>=0;k--){
+      const t = a + k*Math.PI/2;
+      const x = r*Math.cos(t), y = r*Math.sin(t);
+      vec(o, g, x, y, cols[k], k===0?2.8:1.8);
+      dot(o, g, x, y, cols[k], k===0?5:4);
+      label(o, g, x, y, names[k], cols[k], 20*Math.cos(t), -20*Math.sin(t));
+      if (k<3) arc(o, g, t, t+Math.PI/2, r*0.62, css('--ghost'), k===0?'+90°':'');
+    }
+  });
+  function upd2(){
+    const d=+phi2.value, r=+r2.value/100, a=d*Math.PI/180;
+    phi2v.textContent = d+'°'; r2v.textContent = fmt(r);
+    out2.innerHTML = '<span>z =</span> '+fmt(r*Math.cos(a),2)+' + '+fmt(r*Math.sin(a),2)+'·i'+
+      '&nbsp;&nbsp;<span>arg z =</span> '+d+'°'+
+      '<br><span>i·z =</span> '+fmt(-r*Math.sin(a),2)+' + '+fmt(r*Math.cos(a),2)+'·i'+
+      '&nbsp;&nbsp;<span>arg =</span> '+((d+90)%360)+'°'+
+      '&nbsp;&nbsp;<span>|i·z| =</span> '+fmt(r);
+    redrawAll();
+  }
+  phi2.addEventListener('input', upd2); r2.addEventListener('input', upd2);
+
+  // --- figure 3: Moivre ----------------------------------------------------
+  const phi3=document.getElementById('phi3'), phi3v=document.getElementById('phi3v');
+  const r3=document.getElementById('r3'), r3v=document.getElementById('r3v');
+  const n3=document.getElementById('n3'), n3v=document.getElementById('n3v');
+  const out3=document.getElementById('out3');
+  plane(document.getElementById('cv3'), o => {
+    const a=+phi3.value*Math.PI/180, r=+r3.value/100, n=+n3.value;
+    let maxr=1; for(let k=1;k<=n;k++) maxr=Math.max(maxr, Math.pow(r,k));
+    const g = frame(o, Math.min(maxr*1.35, 3.2));
+    circle(o, g, 1, css('--line'), [5,5]);
+
+    const pts=[{x:1,y:0}];
+    for(let k=1;k<=n;k++){
+      const rr=Math.pow(r,k), t=a*k;
+      pts.push({x:rr*Math.cos(t), y:rr*Math.sin(t)});
+    }
+    o.ctx.save();
+    o.ctx.strokeStyle=css('--ghost'); o.ctx.lineWidth=1.6; o.ctx.lineJoin='round';
+    o.ctx.beginPath(); o.ctx.moveTo(g.X(pts[0].x), g.Y(pts[0].y));
+    pts.forEach(p=>o.ctx.lineTo(g.X(p.x), g.Y(p.y)));
+    o.ctx.stroke(); o.ctx.restore();
+
+    pts.forEach((p,k)=>{
+      const col = k===0 ? css('--muted') : (k===n ? css('--accent-2') : css('--accent'));
+      dot(o, g, p.x, p.y, col, k===n?5.5:4);
+      if(k===1) label(o,g,p.x,p.y,'z',col,16,-14);
+      if(k===n&&n>1) label(o,g,p.x,p.y,'zⁿ',col,18,-14);
+    });
+    arc(o, g, 0, a, 0.34, css('--muted'), 'φ');
+  });
+  function upd3(){
+    const d=+phi3.value, r=+r3.value/100, n=+n3.value;
+    phi3v.textContent=d+'°'; r3v.textContent=fmt(r); n3v.textContent=n;
+    const tot=(d*n)%360;
+    out3.innerHTML='<span>arg zⁿ = n·φ =</span> '+n+' · '+d+'° = '+(d*n)+'°'+
+      (d*n>=360?' ≡ '+tot+'°':'')+
+      '<br><span>|zⁿ| = |z|ⁿ =</span> '+fmt(r)+' ^ '+n+' = '+fmt(Math.pow(r,n),3);
+    redrawAll();
+  }
+  [phi3,r3,n3].forEach(el=>el.addEventListener('input',upd3));
+
+  // --- figure 4: roots of unity -------------------------------------------
+  const n4=document.getElementById('n4'), n4v=document.getElementById('n4v');
+  const b4a=document.getElementById('b4a'), b4b=document.getElementById('b4b');
+  const out4=document.getElementById('out4');
+  let mode4='all';
+  plane(document.getElementById('cv4'), o => {
+    const n=+n4.value;
+    const g=frame(o,1.45);
+    circle(o, g, 1, css('--line'));
+
+    // polygon
+    o.ctx.save();
+    o.ctx.strokeStyle=css('--ghost'); o.ctx.lineWidth=1.6; o.ctx.lineJoin='round';
+    o.ctx.beginPath();
+    for(let k=0;k<=n;k++){
+      const t=TAU*k/n;
+      const X=g.X(Math.cos(t)), Y=g.Y(Math.sin(t));
+      k===0?o.ctx.moveTo(X,Y):o.ctx.lineTo(X,Y);
+    }
+    o.ctx.stroke(); o.ctx.restore();
+
+    for(let k=0;k<n;k++){
+      const t=TAU*k/n;
+      const x=Math.cos(t), y=Math.sin(t);
+      const isGen = (k===1);
+      const col = k===0 ? css('--accent-2') : (isGen ? css('--accent-3') : css('--accent'));
+      if (mode4==='pow' && k===1) vec(o,g,x,y,col,2.6);
+      dot(o, g, x, y, col, (k===0||isGen)?5.5:4);
+      if(n<=12){
+        const txt = k===0 ? '1' : (k===1 ? 'ζ' : 'ζ'+String(k).replace(/\d/g,d=>'⁰¹²³⁴⁵⁶⁷⁸⁹'[d]));
+        label(o, g, x, y, txt, col, 26*Math.cos(t), -26*Math.sin(t));
+      }
+    }
+    if (mode4==='pow') arc(o, g, 0, TAU/n, 0.3, css('--muted'), '');
+  });
+  function upd4(){
+    const n=+n4.value;
+    n4v.textContent=n;
+    const ang=360/n;
+    out4.innerHTML='<span>ζ = cos</span> '+fmt(ang,1)+'° <span>+ i·sin</span> '+fmt(ang,1)+'°'+
+      '&nbsp;&nbsp;<span>порядок группы:</span> '+n+
+      '<br><span>μ'+n+' ≅ ℤ/'+n+'ℤ</span>'+(n===4?'&nbsp;&nbsp; — это {1, i, −1, −i}':'');
+    redrawAll();
+  }
+  n4.addEventListener('input',upd4);
+  b4a.addEventListener('click',()=>{mode4='all';b4a.setAttribute('aria-pressed','true');b4b.setAttribute('aria-pressed','false');redrawAll();});
+  b4b.addEventListener('click',()=>{mode4='pow';b4b.setAttribute('aria-pressed','true');b4a.setAttribute('aria-pressed','false');redrawAll();});
+
+  // --- figure 5: velocity = i·z -------------------------------------------
+  const phi5=document.getElementById('phi5'), phi5v=document.getElementById('phi5v');
+  const out5=document.getElementById('out5');
+  plane(document.getElementById('cv5'), o => {
+    const g=frame(o,1.75);
+    const a=+phi5.value*Math.PI/180;
+    const x=Math.cos(a), y=Math.sin(a);
+    circle(o, g, 1, css('--line'));
+    vec(o, g, x, y, css('--accent'), 2.6);
+    dot(o, g, x, y, css('--accent'), 5);
+    label(o, g, x, y, 'z', css('--accent'), 17*x, -17*y);
+
+    // velocity arrow drawn from the point
+    const vx=-y, vy=x;               // i·z
+    const ctx=o.ctx;
+    const x0=g.X(x), y0=g.Y(y), x1=g.X(x+vx*0.62), y1=g.Y(y+vy*0.62);
+    ctx.save();
+    ctx.strokeStyle=css('--accent-2'); ctx.fillStyle=css('--accent-2');
+    ctx.lineWidth=2.6; ctx.lineCap='round';
+    ctx.beginPath(); ctx.moveTo(x0,y0); ctx.lineTo(x1,y1); ctx.stroke();
+    const ang=Math.atan2(y1-y0,x1-x0), L=9;
+    ctx.beginPath(); ctx.moveTo(x1,y1);
+    ctx.lineTo(x1-L*Math.cos(ang-0.38), y1-L*Math.sin(ang-0.38));
+    ctx.lineTo(x1-L*Math.cos(ang+0.38), y1-L*Math.sin(ang+0.38));
+    ctx.closePath(); ctx.fill();
+    // right-angle mark
+    const m=11;
+    ctx.strokeStyle=css('--muted'); ctx.lineWidth=1.2;
+    const ux=x, uy=-y, wx=vx, wy=-vy;
+    ctx.beginPath();
+    ctx.moveTo(x0-ux*m, y0-uy*m);
+    ctx.lineTo(x0-ux*m+wx*m, y0-uy*m+wy*m);
+    ctx.lineTo(x0+wx*m, y0+wy*m);
+    ctx.stroke();
+    ctx.fillStyle=css('--accent-2');
+    ctx.font='500 13px "IBM Plex Mono", monospace';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText("z′ = i·z", x1+18*vx, y1-18*vy);
+    ctx.restore();
+  });
+  function upd5(){
+    const d=+phi5.value, a=d*Math.PI/180;
+    phi5v.textContent=d+'°';
+    out5.innerHTML='<span>z =</span> '+fmt(Math.cos(a),3)+' + '+fmt(Math.sin(a),3)+'·i'+
+      '&nbsp;&nbsp;<span>arg z =</span> '+d+'°'+
+      '<br><span>z′ = i·z =</span> '+fmt(-Math.sin(a),3)+' + '+fmt(Math.cos(a),3)+'·i'+
+      '&nbsp;&nbsp;<span>arg z′ =</span> '+((d+90)%360)+'° <span>— всегда на 90° впереди</span>';
+    redrawAll();
+  }
+  phi5.addEventListener('input',upd5);
+
+  document.fonts && document.fonts.ready.then(redrawAll);
+  upd1(); upd2(); upd3(); upd4(); upd5();
+})();
+</script>
+
+</body>
+</html>

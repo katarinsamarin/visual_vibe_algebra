@@ -1,0 +1,537 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Карта зависимостей: билеты 55–66</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#F4F6FB; --panel:#FFFFFF; --ink:#141B2B; --muted:#5C6879;
+  --line:#DBE1ED; --edge:#AEB8CA; --edge-hi:#3A3FB8;
+  --c-base:#4A5568; --c-a:#3A3FB8; --c-b:#A8600A; --c-c:#0D7A84; --c-ext:#8A93A6;
+  --shadow:0 1px 2px rgba(20,27,43,.06),0 10px 30px rgba(20,27,43,.08);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0C1019; --panel:#141A28; --ink:#E7EBF6; --muted:#94A0B5;
+    --line:#232C40; --edge:#3B475F; --edge-hi:#8C90FF;
+    --c-base:#94A0B5; --c-a:#8C90FF; --c-b:#E0A651; --c-c:#4FC4CF; --c-ext:#6B7689;
+    --shadow:0 1px 2px rgba(0,0,0,.5),0 12px 34px rgba(0,0,0,.4);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0C1019; --panel:#141A28; --ink:#E7EBF6; --muted:#94A0B5;
+  --line:#232C40; --edge:#3B475F; --edge-hi:#8C90FF;
+  --c-base:#94A0B5; --c-a:#8C90FF; --c-b:#E0A651; --c-c:#4FC4CF; --c-ext:#6B7689;
+  --shadow:0 1px 2px rgba(0,0,0,.5),0 12px 34px rgba(0,0,0,.4);
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:"IBM Plex Sans",system-ui,sans-serif; font-size:15px; line-height:1.55;
+  overflow:hidden; -webkit-font-smoothing:antialiased;
+}
+#app{display:flex; height:100vh; width:100%}
+#stage{flex:1; position:relative; overflow:hidden; cursor:grab}
+#stage.drag{cursor:grabbing}
+svg{width:100%; height:100%; display:block; touch-action:none}
+
+.hdr{
+  position:absolute; top:0; left:0; right:0; padding:14px 18px; pointer-events:none;
+  background:linear-gradient(var(--bg),transparent); z-index:2;
+}
+.hdr h1{
+  font-family:Spectral,Georgia,serif; font-weight:600; font-size:19px; margin:0 0 3px;
+}
+.hdr p{margin:0; font-size:12.5px; color:var(--muted); font-family:"IBM Plex Mono",monospace}
+
+.legend{
+  position:absolute; left:18px; bottom:16px; z-index:2; display:flex; flex-wrap:wrap;
+  gap:6px 14px; font-family:"IBM Plex Mono",monospace; font-size:11.5px; color:var(--muted);
+  background:var(--panel); border:1px solid var(--line); border-radius:9px; padding:9px 12px;
+  box-shadow:var(--shadow); max-width:min(560px,60vw);
+}
+.legend i{font-style:normal; display:flex; align-items:center; gap:6px}
+.legend i::before{content:""; width:10px; height:10px; border-radius:3px; background:currentColor}
+.lg-base{color:var(--c-base)} .lg-a{color:var(--c-a)} .lg-b{color:var(--c-b)}
+.lg-c{color:var(--c-c)} .lg-ext{color:var(--c-ext)}
+
+.zoom{
+  position:absolute; right:16px; bottom:16px; z-index:2; display:flex; gap:6px;
+}
+.zoom button{
+  width:34px; height:34px; border-radius:8px; border:1px solid var(--line);
+  background:var(--panel); color:var(--ink); font-size:16px; cursor:pointer;
+  box-shadow:var(--shadow); font-family:"IBM Plex Mono",monospace;
+}
+.zoom button:focus-visible{outline:2px solid var(--c-a); outline-offset:2px}
+
+/* graph */
+.node{cursor:pointer}
+.node rect{
+  fill:var(--panel); stroke-width:1.6; rx:9;
+  filter:drop-shadow(0 2px 4px rgba(20,27,43,.06));
+}
+.node text{font-family:"IBM Plex Sans",sans-serif; pointer-events:none}
+.node .nid{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.04em}
+.node .ttl{font-size:12.5px; font-weight:500; fill:var(--ink)}
+.node.dim{opacity:.22}
+.node.sel rect{stroke-width:2.8}
+.edge{fill:none; stroke:var(--edge); stroke-width:1.5; marker-end:url(#ar)}
+.edge.hi{stroke:var(--edge-hi); stroke-width:2.4; marker-end:url(#arhi)}
+.edge.dim{opacity:.12}
+.elabel{
+  font-family:"IBM Plex Mono",monospace; font-size:9.5px; fill:var(--muted);
+  pointer-events:none; opacity:0;
+}
+.elabel.show{opacity:1}
+
+/* panel */
+#panel{
+  width:400px; flex:none; background:var(--panel); border-left:1px solid var(--line);
+  overflow-y:auto; padding:22px 22px 40px; box-shadow:var(--shadow); z-index:3;
+}
+#panel .eyebrow{
+  font-family:"IBM Plex Mono",monospace; font-size:11.5px; letter-spacing:.1em;
+  text-transform:uppercase; margin:0 0 8px;
+}
+#panel h2{
+  font-family:Spectral,Georgia,serif; font-weight:600; font-size:21px; line-height:1.25;
+  margin:0 0 14px; text-wrap:balance;
+}
+#panel h3{
+  font-family:"IBM Plex Mono",monospace; font-size:11.5px; letter-spacing:.08em;
+  text-transform:uppercase; color:var(--muted); margin:22px 0 7px; font-weight:500;
+}
+#panel p{margin:0 0 11px}
+.stmt{
+  border-left:3px solid currentColor; padding:3px 0 3px 14px; margin:0 0 4px;
+}
+.stmt p{color:var(--ink)}
+.m{font-family:"IBM Plex Mono",monospace; font-size:.93em}
+.deps{list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:5px}
+.deps li{font-size:13.5px}
+.deps button{
+  background:none; border:0; padding:0; text-align:left; cursor:pointer; color:var(--ink);
+  font:inherit; font-size:13.5px; border-bottom:1px dashed var(--edge);
+}
+.deps button:hover{color:var(--c-a); border-bottom-color:var(--c-a)}
+.deps span{color:var(--muted); font-size:12.5px}
+.hint{color:var(--muted); font-size:13.5px}
+@media (max-width:900px){
+  #app{flex-direction:column}
+  #panel{width:100%; height:46%; border-left:0; border-top:1px solid var(--line)}
+  .legend{display:none}
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="stage">
+    <div class="hdr">
+      <h1>Карта зависимостей: билеты 55–66</h1>
+      <p>клик по узлу — формулировка и доказательство · тяните фон · колесо — масштаб</p>
+    </div>
+    <svg id="svg">
+      <defs>
+        <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="var(--edge)"/>
+        </marker>
+        <marker id="arhi" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="var(--edge-hi)"/>
+        </marker>
+      </defs>
+      <g id="view">
+        <g id="edges"></g>
+        <g id="labels"></g>
+        <g id="nodes"></g>
+      </g>
+    </svg>
+    <div class="legend">
+      <i class="lg-ext">внешние (32–54)</i>
+      <i class="lg-base">55 фундамент</i>
+      <i class="lg-a">A: над полем</i>
+      <i class="lg-b">B: корни, анализ</i>
+      <i class="lg-c">C: Гаусс</i>
+    </div>
+    <div class="zoom">
+      <button id="zin" title="Приблизить">+</button>
+      <button id="zout" title="Отдалить">−</button>
+      <button id="zfit" title="Вписать">⤢</button>
+    </div>
+  </div>
+  <aside id="panel">
+    <p class="eyebrow" style="color:var(--muted)">начало</p>
+    <h2>Выберите узел</h2>
+    <p class="hint">Каждый прямоугольник — утверждение из конспекта. Стрелка ведёт от того, что используется, к тому, что доказывается; подпись на стрелке говорит, <em>что именно</em> берётся.</p>
+    <h3>Три опоры блока</h3>
+    <p class="hint">Почти любое доказательство сводится к одному из трёх: <b>лемма о степени</b> (55), <b>деление с остатком</b> (56), <b>критерий факториальности</b> (б.48). Если потерялись — ищите, какая из трёх работает.</p>
+    <h3>Как читать</h3>
+    <p class="hint">Наведите на узел — подсветятся все его связи с подписями. Клик открывает карточку: формулировка, набросок доказательства, что нужно и куда идёт дальше.</p>
+  </aside>
+</div>
+
+<script>
+const N = [
+ // externals (col 0)
+ {id:"e32", c:"ext", col:0, row:0, b:"б.32", t:"Экспонента группы",
+  s:"exp G = НОК порядков. Для конечной абелевой G: (1) есть элемент порядка exp G; (2) exp G | |G|; (3) G циклична ⟺ exp G = |G|.",
+  p:"Ключ — (1): если ord a = m, ord b = n, то в абелевой группе есть элемент порядка НОК(m,n). Разносим простые множители НОК между a и b, берём элементы взаимно простых порядков, их произведение имеет порядок-произведение."},
+ {id:"e36", c:"ext", col:0, row:1, b:"б.36", t:"Теорема о гомоморфизме",
+  s:"R/Ker φ ≅ Im φ.",
+  p:"Следствие универсального свойства факторкольца при I = Ker φ: индуцированный g инъективен, а образ совпадает с Im φ."},
+ {id:"e41", c:"ext", col:0, row:2, b:"б.41", t:"Евклидово ⇒ ОГИ",
+  s:"В евклидовом кольце каждый идеал главный.",
+  p:"Берём в идеале ненулевой элемент b минимальной нормы (можно, т.к. значения в ℕ). Делим на него любой a ∈ I: остаток лежит в I и имеет меньшую норму, значит нулевой."},
+ {id:"e42", c:"ext", col:0, row:3, b:"б.42", t:"Взаимно простые идеалы",
+  s:"I и J взаимно просты ⟺ I + J = R ⟺ ∃ a ∈ I, b ∈ J: a + b = 1.",
+  p:"Определение плюс: тогда I ∩ J = IJ."},
+ {id:"e44", c:"ext", col:0, row:4, b:"б.44", t:"Китайская теорема об остатках",
+  s:"Для попарно взаимно простых идеалов R/(I₁···Iₙ) ≅ R/I₁ ⊕ … ⊕ R/Iₙ.",
+  p:"Гомоморфизм x ↦ (x+I₁, …, x+Iₙ). Ядро = ∩Iᵢ = ∏Iᵢ. Сюръективность — через разложение единицы a + b = 1. Дальше теорема о гомоморфизме."},
+ {id:"e45", c:"ext", col:0, row:5, b:"б.45", t:"Неприводимый и простой",
+  s:"a неприводим: из a = bc следует, что b или c ассоциирован с a. p прост: pR — простой идеал. Простой ⇒ неприводим; обратное неверно (ℤ[√−3]).",
+  p:"Ассоциированность ⟺ aR = bR ⟺ отличаются на обратимый множитель."},
+ {id:"e48", c:"ext", col:0, row:6, b:"б.48", t:"Критерий факториальности",
+  s:"ОГИ ⇒ факториально. Критерий: область факториальна ⟺ разложения на неприводимые существуют и каждый неприводимый прост.",
+  p:"Именно вторая половина (неприводимый ⇒ простой) проверяется в билете 66 для R[t]."},
+ {id:"e50", c:"ext", col:0, row:7, b:"б.50", t:"НОД в факториальном",
+  s:"В факториальной области у любых двух элементов есть НОД: минимумы показателей в разложениях.",
+  p:"d = ∏ pᵢ^min(kᵢ,mᵢ). Общий делитель имеет показатели ≤ обоих, значит делит d."},
+ {id:"e52", c:"ext", col:0, row:8, b:"б.52–54", t:"Поле частных",
+  s:"Для области целостности R строится F = Frac R — наименьшее поле, содержащее R. Frac(F[t]) = F(t).",
+  p:"Пары (a,b), b ≠ 0, с отношением a/b = c/d ⟺ ad = bc. Целостность нужна для корректности и для bd ≠ 0."},
+ {id:"e37", c:"ext", col:0, row:9, b:"б.37", t:"Сопряжение — автоморфизм ℂ",
+  s:"z ↦ z̄ сохраняет + и ×, причём z̄ = z ⟺ z ∈ ℝ.",
+  p:"Прямая проверка на a + bi. Неподвижное поле — ровно ℝ."},
+ {id:"e39", c:"ext", col:0, row:10, b:"б.39", t:"Разрешимость zᵐ = w",
+  s:"В ℂ уравнение zᵐ = w имеет решение (ровно m при w ≠ 0).",
+  p:"Тригонометрическая форма: делим аргумент на m, извлекаем корень из модуля."},
+ {id:"ean", c:"ext", col:0, row:11, b:"анализ", t:"Вейерштрасс о минимуме",
+  s:"Непрерывная функция на компакте достигает наименьшего значения.",
+  p:"Единственное неалгебраическое утверждение, используемое в блоке. Без него ОТА не доказать."},
+
+ // 55 (col 1)
+ {id:"n55alg", c:"base", col:1, row:1, b:"55", t:"F[t] — F-алгебра",
+  s:"Многочлен = конечный набор коэффициентов; умножение — свёртка γ_k = Σ_{i+j=k} α_i β_j. F[t] коммутативна, ассоциативна, с единицей.",
+  p:"Коммутативность: множество {(i,j) : i+j=k} симметрично при перестановке индексов, плюс коммутативность F. Ассоциативность: тройное условие i₁+i₂+j=k однозначно, скобки не важны. Остальные аксиомы наследуются от F покомпонентно."},
+ {id:"n55deg", c:"base", col:1, row:2, b:"55", t:"Лемма о степени",
+  s:"Всегда deg(p+q) ⩽ max, deg(pq) ⩽ deg p + deg q. Над областью целостности deg(pq) = deg p + deg q.",
+  p:"При k > n+m в каждой паре (i,j) с i+j=k один индекс вне диапазона → γ_k = 0. При k = n+m выживает одна пара (n,m), значит γ_{n+m} = α_n β_m — и вот здесь нужна целостность, чтобы это было ≠ 0."},
+ {id:"n55un", c:"base", col:1, row:3, b:"55", t:"F[t]ˣ = Fˣ",
+  s:"Над областью целостности обратимы только обратимые константы. Кроме того, F[t] сама область целостности.",
+  p:"pq = 1 ⇒ deg p + deg q = 0 ⇒ обе степени нулевые ⇒ p, q ∈ F. Контрпример без целостности: (1+2t)² = 1 в (ℤ/4ℤ)[t]."},
+ {id:"n55up", c:"base", col:1, row:4, b:"55", t:"Универсальное свойство",
+  s:"Для коммутативной F-алгебры A и любого a ∈ A существует единственный гомоморфизм ε_a: F[t] → A с ε_a(t) = a.",
+  p:"Существование: подстановка, мультипликативность — это ровно раскрытие свёртки. Единственность: образы констант и t заданы, а всё остальное из них собирается + и ×."},
+ {id:"n55fun", c:"base", col:1, row:5, b:"55", t:"Многочлен ≠ функция",
+  s:"Отображение p ↦ p̃ (в алгебру функций) — гомоморфизм, но не обязательно инъективный: над 𝔽₂ имеем t ≠ t², а функции совпадают.",
+  p:"В 𝔽₂ всего два элемента, 0² = 0 и 1² = 1. Многочленов бесконечно, функций 𝔽₂→𝔽₂ всего 4."},
+ {id:"n55mult", c:"base", col:1, row:6, b:"55", t:"Несколько переменных",
+  s:"F[t₁,…,tₙ] ≅ (F[t₁,…,tₙ₋₁])[tₙ]; гомоморфизм задаётся выбором n элементов.",
+  p:"Индукция по n на универсальном свойстве. Для шага нужно, чтобы F[t₁] снова была областью — это лемма о степени."},
+
+ // 56 (col 2)
+ {id:"n56div", c:"a", col:2, row:2, b:"56", t:"Деление с остатком",
+  s:"F — поле. Для любых a, b ≠ 0 существуют единственные q, r: a = bq + r, deg r < deg b. Значит F[t] евклидово с нормой deg.",
+  p:"Шаг: a₁ = a − (α_n/β_m)·t^{n−m}·b убивает старший член, степень падает, индукция. Деление на β_m — единственное место, где нужно поле (для унитарного делителя поле не нужно). Единственность: из b(q−q′) = r′−r степени слева ⩾ deg b, справа < deg b."},
+ {id:"n56pid", c:"a", col:2, row:3, b:"56", t:"F[t] — ОГИ, факториально",
+  s:"Каждый идеал имеет вид (g), где g — многочлен наименьшей степени в идеале.",
+  p:"Евклидово ⇒ ОГИ (б.41) ⇒ факториально (б.48)."},
+ {id:"n56b1", c:"a", col:2, row:4, b:"56", t:"Безу (1)–(2)",
+  s:"Остаток от деления p на (t−α) равен p(α). Следовательно: α — корень ⟺ (t−α) | p.",
+  p:"p = (t−α)q + r, где deg r < 1, т.е. r — константа. Подставляем α (законно, ε_α — гомоморфизм): p(α) = 0·q(α) + r = r."},
+ {id:"n56b3", c:"a", col:2, row:5, b:"56", t:"Безу (3): корней ⩽ n",
+  s:"Ненулевой многочлен степени n имеет не более n корней.",
+  p:"Индукция: корень α даёт p = (t−α)q, deg q = n−1 (лемма о степени). Другой корень β: (β−α)q(β) = 0, первый множитель ≠ 0, делителей нуля нет ⇒ q(β) = 0."},
+ {id:"n56fun", c:"a", col:2, row:6, b:"56", t:"Функции над бесконечным полем",
+  s:"Если F бесконечно, разные многочлены задают разные функции.",
+  p:"p − q обращается в нуль всюду, значит имеет бесконечно много корней, значит равен нулю."},
+
+ // 57, 58 (col 3)
+ {id:"n57", c:"a", col:3, row:1, b:"57", t:"Конечная подгруппа Fˣ циклична",
+  s:"Любая конечная подгруппа мультипликативной группы поля циклическая. Следствие: 𝔽_qˣ циклична, есть первообразный корень.",
+  p:"k = exp G ⇒ все n = |G| элементов суть корни t^k − 1 ⇒ n ⩽ k по Безу(3). С другой стороны k | n, значит k ⩽ n. Итого n = k, и по критерию из б.32 группа циклична."},
+ {id:"n58", c:"a", col:3, row:4, b:"58", t:"Интерполяция Лагранжа",
+  s:"По n+1 различным узлам и значениям существует единственный многочлен степени ⩽ n с p(tᵢ) = yᵢ.",
+  p:"Условия p(tᵢ) = yᵢ — это сравнения по модулю (t−tᵢ) (Безу). Идеалы попарно взаимно просты (разность — обратимая константа), значит работает КТО: решение существует и единственно по модулю ∏(t−tᵢ). В каждом классе ровно один представитель степени < n+1 — остаток от деления. Базисные ℓᵢ — идемпотенты из КТО."},
+
+ // 59 (col 4)
+ {id:"n59", c:"b", col:4, row:6, b:"59", t:"Формальная производная",
+  s:"p′ определяется формулой (без пределов) и удовлетворяет линейности, правилу Лейбница (pq)′ = p′q + pq′ и правилу композиции.",
+  p:"Обе части линейны по p и q, поэтому достаточно проверить на одночленах: (tⁿtᵐ)′ = (n+m)t^{n+m−1} = ntⁿ⁻¹tᵐ + tⁿmt^{m−1}. Композиция — индукция по n через Лейбниц. Ловушка: над 𝔽_p производная t^p равна нулю."},
+
+ // 60 (col 5)
+ {id:"n60def", c:"b", col:5, row:5, b:"60", t:"Кратность корня",
+  s:"α имеет кратность k в f, если f = (t−α)^k g с g(α) ≠ 0.",
+  p:"Корректность: показатели ограничены deg f (лемма о степени), значит максимум существует. Эквивалентность двух формулировок — по Безу."},
+ {id:"n60lem", c:"b", col:5, row:6, b:"60", t:"Кратность и производная",
+  s:"Если α имеет кратность k ⩾ 1 в f, то в f′ кратность ⩾ k−1; если k ≠ 0 в F, то ровно k−1. В частности k = 1 ⟺ f′(α) ≠ 0.",
+  p:"f′ = (t−α)^{k−1}(kg + (t−α)g′) по Лейбницу. Значение скобки в α равно kg(α) ≠ 0, если k ≠ 0 в поле."},
+ {id:"n60crit", c:"b", col:5, row:7, b:"60", t:"Критерий кратного корня",
+  s:"При char F = 0: α кратный ⟺ f(α) = f′(α) = 0 ⟺ α — корень НОД(f, f′). Многочлен f/НОД(f,f′) имеет те же корни, но простые.",
+  p:"Из леммы о кратности: кратность в НОД равна min(k, k−1) = k−1, значит в частном остаётся ровно 1. Используется факториальность F[t]."},
+
+ // 61 (col 6)
+ {id:"n61lem", c:"b", col:6, row:2, b:"61", t:"Разложение над замкнутым полем",
+  s:"Если F алгебраически замкнуто, любой многочлен разлагается на линейные множители, а неприводимые — ровно степени 1.",
+  p:"Индукция: есть корень ⇒ по Безу f = (t−α)g со степенью на 1 меньше."},
+ {id:"n61fta", c:"b", col:6, row:3, b:"61", t:"Основная теорема алгебры",
+  s:"Поле ℂ алгебраически замкнуто: всякий многочлен степени ⩾ 1 имеет корень.",
+  p:"Шаг 1: |p(z)| → ∞ при |z| → ∞, значит инфимум достигается на замкнутом круге — это Вейерштрасс, единственное место с анализом. Шаг 2 (д'Аламбер): если |q(0)| > 0, подбираем z₀ так, чтобы b_m z₀^m было отрицательным вещественным (разрешимость zᵐ = w, б.39); тогда |f(z₀)| < 1 — противоречие с минимальностью."},
+
+ // 62 (col 7)
+ {id:"n62c", c:"b", col:7, row:2, b:"62", t:"Корни идут парами",
+  s:"Для p ∈ ℝ[t]: p(w) = 0 ⇒ p(w̄) = 0. Общее: ḡ(w̄) = conj(g(w)).",
+  p:"Сопряжение — гомоморфизм, поэтому перестановочно с подстановкой: Σ c̄_k w̄^k = conj(Σ c_k w^k). Для вещественных коэффициентов ḡ = g."},
+ {id:"n62i", c:"b", col:7, row:3, b:"62", t:"Неприводимые в ℝ[t]",
+  s:"Это в точности многочлены степени 1 и степени 2 с отрицательным дискриминантом; всякий вещественный многочлен — их произведение.",
+  p:"Невещественный корень w даёт пару w, w̄; многочлены t−w и t−w̄ взаимно просты в ℂ[t], значит p делится на их произведение, а оно лежит в ℝ[t]. Существование разложения — факториальность ℝ[t]."},
+
+ // 63 (col 8)
+ {id:"n63c", c:"c", col:8, row:5, b:"63", t:"Содержание и примитивность",
+  s:"R факториальна, F = Frac R. cont f = НОД коэффициентов; f = cont f · f̃, где f̃ примитивен (cont = 1).",
+  p:"Определено с точностью до обратимого множителя, так как НОД в факториальном кольце существует (б.50)."},
+ {id:"n63q", c:"c", col:8, row:6, b:"63", t:"R[t]/pR[t] ≅ (R/pR)[t]",
+  s:"Редукция коэффициентов по модулю p — гомоморфизм с ядром pR[t].",
+  p:"Строим сюръекцию R[t] → (R/pR)[t] покоэффициентно, ядро — многочлены со всеми коэффициентами в pR. Дальше теорема о гомоморфизме."},
+ {id:"n63g", c:"c", col:8, row:7, b:"63", t:"Лемма Гаусса",
+  s:"Произведение примитивных многочленов примитивно. Следствие: cont(fg) = cont f · cont g.",
+  p:"От противного: если p делит все коэффициенты fg, переходим в (R/pR)[t]. Это область целостности (pR прост, т.к. R факториально + лемма о степени), значит образ f или g нулевой, т.е. p делит все коэффициенты одного из них — противоречие с примитивностью."},
+
+ // 64, 65 (col 9)
+ {id:"n64", c:"c", col:9, row:6, b:"64", t:"Теорема Гаусса о неприводимости",
+  s:"Примитивный f ∈ R[t] неприводим в R[t] ⟺ неприводим в F[t].",
+  p:"Разложение над F домножением на общий знаменатель переносится в R[t]; по лемме Гаусса содержания перемножаются, значит множители можно сделать примитивными и остаться в R[t]."},
+ {id:"n65", c:"c", col:9, row:8, b:"65", t:"Рациональные корни, целозамкнутость",
+  s:"Если несократимая дробь c/d — корень f = aₙtⁿ + … + a₀, то c | a₀ и d | aₙ. Факториальная область целозамкнута.",
+  p:"Многочлен dt − c примитивен, поэтому по мультипликативности содержания cont правой и левой части сравниваются; отсюда делимости. Целозамкнутость: корень унитарного многочлена, лежащий в F, лежит в R."},
+
+ // 66 (col 10)
+ {id:"n66", c:"c", col:10, row:7, b:"66", t:"R[t] факториально",
+  s:"Если R — факториальная область, то и R[t] факториально. Следствие: ℤ[t], F[t₁,…,tₙ], ℤ[t₁,…,tₙ] факториальны.",
+  p:"Существование разложения: f = cont f · f̃, константа раскладывается в R, примитивная часть — индукцией по степени. Единственность: по критерию факториальности достаточно «неприводимый ⇒ простой». Случай deg u = 0 — через R[t]/uR[t] ≅ (R/uR)[t]; случай deg u > 0 — по теореме Гаусса u неприводим в F[t], а F[t] факториально."},
+];
+
+const E = [
+ ["n55alg","n55deg","симметрия свёртки"],
+ ["n55deg","n55un","deg(pq)=deg p+deg q"],
+ ["n55alg","n55up","свёртка ⇒ ε_a гомоморфизм"],
+ ["n55up","n55fun","подстановка"],
+ ["n55up","n55mult","индукция по переменным"],
+ ["n55deg","n55mult","F[t] снова область"],
+
+ ["n55deg","n56div","единственность q, r"],
+ ["e41","n56pid","евклидово ⇒ ОГИ"],
+ ["e48","n56pid","ОГИ ⇒ факториально"],
+ ["n56div","n56pid","норма = deg"],
+ ["n56div","n56b1","деление на t−α"],
+ ["n55up","n56b1","подстановка ε_α"],
+ ["n56b1","n56b3","корень ⇒ множитель"],
+ ["n55deg","n56b3","deg падает на 1"],
+ ["n56b3","n56fun","корней конечно"],
+ ["n55fun","n56fun","над 𝔽₂ ломается"],
+
+ ["n56b3","n57","корней ⩽ deg"],
+ ["e32","n57","exp G и цикличность"],
+
+ ["n56b1","n58","p(tᵢ)=yᵢ ⟺ сравнение"],
+ ["e42","n58","(t−tᵢ) взаимно просты"],
+ ["e44","n58","КТО"],
+ ["n56div","n58","единственный представитель"],
+
+ ["n55alg","n59","проверка на одночленах"],
+ ["n55mult","n59","метод общего элемента"],
+
+ ["n56b1","n60def","(t−α)^k | f"],
+ ["n55deg","n60def","k ограничено deg f"],
+ ["n59","n60lem","правило Лейбница"],
+ ["n60def","n60lem","f=(t−α)^k g"],
+ ["n60lem","n60crit","кратность в f′ = k−1"],
+ ["n56pid","n60crit","НОД, факториальность"],
+
+ ["n56b1","n61lem","корень ⇒ множитель"],
+ ["ean","n61fta","минимум на компакте"],
+ ["e39","n61fta","zᵐ = w разрешимо"],
+ ["n61fta","n62i","ℂ алгебраически замкнуто"],
+ ["n61lem","n62i","разложение на линейные"],
+
+ ["e37","n62c","сопряжение — гомоморфизм"],
+ ["n55up","n62c","коммутирует с подстановкой"],
+ ["n62c","n62i","корни парами w, w̄"],
+ ["n56pid","n62i","факториальность ℝ[t]"],
+
+ ["e50","n63c","НОД существует"],
+ ["e52","n63c","F = Frac R"],
+ ["e36","n63q","теорема о гомоморфизме"],
+ ["n63q","n63g","(R/pR)[t] — область"],
+ ["e48","n63g","pR прост"],
+ ["n55deg","n63g","область ⇒ область в [t]"],
+ ["n63c","n63g","примитивность"],
+
+ ["n63g","n64","произведение примитивных"],
+ ["e52","n64","переход к F[t]"],
+ ["n63g","n65","cont(fg)=cont f·cont g"],
+ ["n63c","n65","dt−c примитивен"],
+
+ ["n64","n66","неприводим в F[t]"],
+ ["n63q","n66","случай deg u = 0"],
+ ["e48","n66","критерий факториальности"],
+ ["n56pid","n66","F[t] факториально"],
+ ["n63c","n66","f = cont f · f̃"],
+ ["n55mult","n66","много переменных"],
+];
+
+const COL = {ext:"--c-ext", base:"--c-base", a:"--c-a", b:"--c-b", c:"--c-c"};
+const W = 178, H = 50, GX = 248, GY = 92;
+
+const byId = {}; N.forEach(n => {
+  n.x = 60 + n.col*GX;
+  n.y = n.c === "ext" ? 60 + n.row*66 : 70 + n.row*GY;
+  byId[n.id] = n;
+});
+
+const svg = document.getElementById("svg");
+const gEdges = document.getElementById("edges");
+const gLabels = document.getElementById("labels");
+const gNodes = document.getElementById("nodes");
+const panel = document.getElementById("panel");
+const NS = "http://www.w3.org/2000/svg";
+const el = (t,a) => { const e = document.createElementNS(NS,t); for(const k in a) e.setAttribute(k,a[k]); return e; };
+
+// --- edges
+const edgeEls = [];
+E.forEach(([f,t,label]) => {
+  const a = byId[f], b = byId[t];
+  if(!a || !b) return;
+  const x1 = a.x + W, y1 = a.y + H/2, x2 = b.x, y2 = b.y + H/2;
+  const dx = Math.max(40, (x2-x1)/2);
+  const d = `M${x1},${y1} C${x1+dx},${y1} ${x2-dx},${y2} ${x2},${y2}`;
+  const p = el("path",{class:"edge", d});
+  gEdges.appendChild(p);
+  const mx = (x1+x2)/2, my = (y1+y2)/2 - 6;
+  const lb = el("text",{class:"elabel", x:mx, y:my, "text-anchor":"middle"});
+  lb.textContent = label;
+  gLabels.appendChild(lb);
+  edgeEls.push({p, lb, f, t, label});
+});
+
+// --- nodes
+function wrap(text, max){
+  const words = text.split(" "); const lines = []; let cur = "";
+  words.forEach(w => {
+    if((cur+" "+w).trim().length > max){ lines.push(cur.trim()); cur = w; }
+    else cur += " " + w;
+  });
+  if(cur.trim()) lines.push(cur.trim());
+  return lines.slice(0,2);
+}
+N.forEach(n => {
+  const g = el("g",{class:"node", "data-id":n.id, transform:`translate(${n.x},${n.y})`});
+  const col = `var(${COL[n.c]})`;
+  g.appendChild(el("rect",{width:W, height:H, stroke:col}));
+  const id = el("text",{class:"nid", x:11, y:17, fill:col});
+  id.textContent = n.b;
+  g.appendChild(id);
+  const lines = wrap(n.t, 26);
+  lines.forEach((ln,i) => {
+    const tx = el("text",{class:"ttl", x:11, y:33 + i*14});
+    tx.textContent = ln;
+    g.appendChild(tx);
+  });
+  g.addEventListener("click", e => { e.stopPropagation(); select(n.id); });
+  g.addEventListener("mouseenter", () => highlight(n.id));
+  g.addEventListener("mouseleave", () => { if(!sel) clearHi(); else highlight(sel); });
+  gNodes.appendChild(g);
+});
+
+let sel = null;
+function highlight(id){
+  const keep = new Set([id]);
+  edgeEls.forEach(e => { if(e.f===id||e.t===id){ keep.add(e.f); keep.add(e.t); } });
+  edgeEls.forEach(e => {
+    const on = (e.f===id||e.t===id);
+    e.p.classList.toggle("hi", on);
+    e.p.classList.toggle("dim", !on);
+    e.lb.classList.toggle("show", on);
+  });
+  gNodes.querySelectorAll(".node").forEach(g => {
+    g.classList.toggle("dim", !keep.has(g.dataset.id));
+    g.classList.toggle("sel", g.dataset.id === id);
+  });
+}
+function clearHi(){
+  edgeEls.forEach(e => { e.p.classList.remove("hi","dim"); e.lb.classList.remove("show"); });
+  gNodes.querySelectorAll(".node").forEach(g => g.classList.remove("dim","sel"));
+}
+
+function select(id){
+  sel = id; highlight(id);
+  const n = byId[id];
+  const col = `var(${COL[n.c]})`;
+  const needs = edgeEls.filter(e => e.t===id);
+  const feeds = edgeEls.filter(e => e.f===id);
+  const li = arr => arr.length ? arr.map(e => {
+    const other = byId[e.t===id ? e.f : e.t];
+    return `<li><button data-go="${other.id}">${other.b} · ${other.t}</button><br><span>${e.label}</span></li>`;
+  }).join("") : `<li><span>—</span></li>`;
+  panel.innerHTML = `
+    <p class="eyebrow" style="color:${col}">Билет ${n.b.replace("б.","")}</p>
+    <h2>${n.t}</h2>
+    <div class="stmt" style="color:${col}"><p>${n.s}</p></div>
+    <h3>Доказательство</h3><p>${n.p}</p>
+    <h3>Опирается на</h3><ul class="deps">${li(needs)}</ul>
+    <h3>Используется в</h3><ul class="deps">${li(feeds)}</ul>`;
+  panel.scrollTop = 0;
+  panel.querySelectorAll("[data-go]").forEach(b =>
+    b.addEventListener("click", () => { select(b.dataset.go); centerOn(b.dataset.go); }));
+}
+
+// --- pan & zoom
+let k = 0.85, tx = 0, ty = 0;
+const view = document.getElementById("view");
+const stage = document.getElementById("stage");
+function apply(){ view.setAttribute("transform", `translate(${tx},${ty}) scale(${k})`); }
+function fit(){
+  const xs = N.map(n=>n.x), ys = N.map(n=>n.y);
+  const w = Math.max(...xs)+W+60, h = Math.max(...ys)+H+60;
+  const r = stage.getBoundingClientRect();
+  k = Math.max(0.28, Math.min(r.width/w, r.height/h, 1) * 0.94);
+  tx = (r.width - w*k)/2; ty = Math.max(24, (r.height - h*k)/2);
+  apply();
+}
+function centerOn(id){
+  const n = byId[id]; const r = stage.getBoundingClientRect();
+  tx = r.width/2 - (n.x + W/2)*k; ty = r.height/2 - (n.y + H/2)*k; apply();
+}
+let down = false, px = 0, py = 0;
+stage.addEventListener("pointerdown", e => {
+  if(e.target.closest(".node")) return;
+  down = true; px = e.clientX; py = e.clientY; stage.classList.add("drag");
+  stage.setPointerCapture(e.pointerId);
+});
+stage.addEventListener("pointermove", e => {
+  if(!down) return; tx += e.clientX-px; ty += e.clientY-py; px = e.clientX; py = e.clientY; apply();
+});
+stage.addEventListener("pointerup", e => { down = false; stage.classList.remove("drag"); });
+stage.addEventListener("wheel", e => {
+  e.preventDefault();
+  const r = stage.getBoundingClientRect();
+  const mx = e.clientX-r.left, my = e.clientY-r.top;
+  const nk = Math.min(2.2, Math.max(0.25, k * (e.deltaY < 0 ? 1.12 : 0.89)));
+  tx = mx - (mx-tx)*(nk/k); ty = my - (my-ty)*(nk/k); k = nk; apply();
+}, {passive:false});
+document.getElementById("zin").onclick = () => { k = Math.min(2.2, k*1.2); apply(); };
+document.getElementById("zout").onclick = () => { k = Math.max(0.25, k/1.2); apply(); };
+document.getElementById("zfit").onclick = fit;
+stage.addEventListener("click", e => { if(!e.target.closest(".node")){ sel = null; clearHi(); } });
+function start(){ k = 0.62; tx = 24; ty = 34; apply(); }
+window.addEventListener("resize", start);
+start();
+</script>
+</body>
+</html>
