@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Трекер подготовки</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#F5F7FC; --panel:#FFFFFF; --ink:#141B2B; --muted:#5C6879;
+  --line:#DCE2EE; --soft:#EEF1F8; --accent:#3A3FB8;
+  --s0:#9AA4B4; --s1:#D9557B; --s2:#D99A2B; --s3:#4C9A5E; --s4:#1F6B4A; --flag:#7C3AA8;
+  --shadow:0 1px 2px rgba(20,27,43,.05),0 8px 24px rgba(20,27,43,.07);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0D111D; --panel:#151B2B; --ink:#E7EBF6; --muted:#96A1B6;
+    --line:#242D42; --soft:#1B2231; --accent:#8C90FF;
+    --s0:#5A6479; --s1:#E8809C; --s2:#E0B15C; --s3:#67C185; --s4:#3FA97C; --flag:#BC8FE0;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px rgba(0,0,0,.35);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0D111D; --panel:#151B2B; --ink:#E7EBF6; --muted:#96A1B6;
+  --line:#242D42; --soft:#1B2231; --accent:#8C90FF;
+  --s0:#5A6479; --s1:#E8809C; --s2:#E0B15C; --s3:#67C185; --s4:#3FA97C; --flag:#BC8FE0;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+body{margin:0; background:var(--bg); color:var(--ink);
+  font-family:"IBM Plex Sans",system-ui,sans-serif; font-size:15px; line-height:1.5;
+  -webkit-font-smoothing:antialiased}
+
+/* gate */
+#gate{position:fixed; inset:0; background:var(--bg); display:flex; align-items:center;
+  justify-content:center; z-index:50; padding:24px}
+#gate .box{max-width:380px; width:100%; text-align:center}
+#gate h1{font-family:Spectral,Georgia,serif; font-weight:600; font-size:26px; margin:0 0 10px}
+#gate p{color:var(--muted); font-size:14px; margin:0 0 20px}
+#gate input{width:100%; padding:11px 14px; border-radius:10px; border:1px solid var(--line);
+  background:var(--panel); color:var(--ink); font:inherit; text-align:center;
+  font-family:"IBM Plex Mono",monospace; letter-spacing:.14em}
+#gate input:focus{outline:2px solid var(--accent); outline-offset:1px}
+#gate .err{color:var(--s1); font-size:13px; height:18px; margin-top:9px}
+
+.shell{display:none; max-width:1080px; margin:0 auto; padding:38px 24px 90px}
+.shell.on{display:block}
+
+header{margin-bottom:22px}
+.eyebrow{font-family:"IBM Plex Mono",monospace; font-size:11.5px; letter-spacing:.13em;
+  text-transform:uppercase; color:var(--accent); margin:0 0 11px}
+h1.t{font-family:Spectral,Georgia,serif; font-weight:600; font-size:clamp(26px,4.4vw,36px);
+  margin:0 0 10px; line-height:1.14}
+.sub{color:var(--muted); margin:0; font-size:15px}
+
+/* overall */
+.overall{background:var(--panel); border:1px solid var(--line); border-radius:14px;
+  padding:18px 20px; box-shadow:var(--shadow); margin:22px 0 18px}
+.bar{display:flex; height:14px; border-radius:7px; overflow:hidden; background:var(--soft)}
+.bar span{display:block; transition:width .25s ease}
+.stats{display:flex; flex-wrap:wrap; gap:8px 20px; margin-top:14px;
+  font-family:"IBM Plex Mono",monospace; font-size:12.5px; color:var(--muted)}
+.stats b{color:var(--ink); font-weight:500}
+.legend{display:flex; flex-wrap:wrap; gap:6px 16px; margin-top:12px; font-size:12.5px; color:var(--muted)}
+.legend i{font-style:normal; display:flex; align-items:center; gap:6px}
+.legend i::before{content:""; width:10px; height:10px; border-radius:3px; background:currentColor}
+
+/* toolbar */
+.bar2{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:20px; align-items:center}
+.btn{border:1px solid var(--line); background:var(--panel); color:var(--ink); font:inherit;
+  font-size:13px; padding:6px 12px; border-radius:8px; cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+.btn[aria-pressed="true"]{background:var(--accent); border-color:var(--accent); color:#fff}
+.btn:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+.grow{flex:1}
+
+/* sections */
+.sec{margin-bottom:26px}
+.sec h2{font-family:Spectral,Georgia,serif; font-weight:600; font-size:16px; margin:0 0 4px;
+  display:flex; align-items:baseline; gap:10px}
+.sec h2 em{font-style:normal; font-family:"IBM Plex Mono",monospace; font-size:12px; color:var(--muted)}
+.sec .minibar{display:flex; height:6px; border-radius:3px; overflow:hidden;
+  background:var(--soft); margin:6px 0 10px}
+.cells{display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:7px}
+.cell{position:relative; text-align:left; cursor:pointer; border:1px solid var(--line);
+  border-left:4px solid var(--s0); background:var(--panel); border-radius:9px;
+  padding:8px 10px 7px; font:inherit; color:var(--ink); min-height:62px;
+  display:flex; flex-direction:column; gap:2px; transition:transform .1s, box-shadow .1s}
+.cell:hover{transform:translateY(-1px); box-shadow:var(--shadow)}
+.cell:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+.cell.sel{border-color:var(--accent); border-left-width:4px}
+.cell .num{font-family:"IBM Plex Mono",monospace; font-size:11px; color:var(--muted);
+  display:flex; justify-content:space-between; align-items:center; gap:6px}
+.cell .ttl{font-size:12.5px; line-height:1.3}
+.cell .dots{display:flex; gap:2.5px; margin-top:auto; padding-top:5px}
+.cell .dots i{width:6px; height:6px; border-radius:50%; background:var(--line); display:block}
+.cell .dots i.f{background:var(--accent)}
+.cell .fl{color:var(--flag); font-size:12px}
+.cell .nt{position:absolute; right:7px; bottom:6px; font-size:10px; color:var(--muted)}
+.cell.hide{display:none}
+
+/* panel */
+.det{position:fixed; right:20px; bottom:20px; width:340px; max-width:calc(100vw - 40px);
+  background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:16px 18px 18px;
+  box-shadow:var(--shadow); z-index:20; display:none}
+.det.on{display:block}
+.det h3{font-family:Spectral,Georgia,serif; font-weight:600; font-size:16px; margin:0 0 4px; line-height:1.3}
+.det .pn{font-family:"IBM Plex Mono",monospace; font-size:11.5px; color:var(--accent);
+  letter-spacing:.09em; text-transform:uppercase; margin:0 0 6px;
+  display:flex; justify-content:space-between}
+.det .pn button{background:none; border:0; color:var(--muted); cursor:pointer; font:inherit; font-size:15px; line-height:1}
+.swatches{display:flex; gap:6px; margin:12px 0 4px}
+.sw{flex:1; height:30px; border-radius:7px; border:2px solid transparent; cursor:pointer;
+  opacity:.42; transition:opacity .12s}
+.sw[aria-pressed="true"]{opacity:1; border-color:var(--ink)}
+.swlabel{font-size:12.5px; color:var(--muted); min-height:32px; margin:6px 0 2px}
+.row{display:flex; align-items:center; gap:10px; margin-top:12px; font-size:13.5px}
+.row .lb{color:var(--muted); font-family:"IBM Plex Mono",monospace; font-size:11.5px;
+  letter-spacing:.08em; text-transform:uppercase}
+.step{display:flex; gap:5px; align-items:center}
+.step button{width:24px; height:24px; border-radius:6px; border:1px solid var(--line);
+  background:var(--panel); color:var(--ink); cursor:pointer; font:inherit; line-height:1}
+.step b{font-family:"IBM Plex Mono",monospace; min-width:16px; text-align:center}
+textarea{width:100%; min-height:64px; margin-top:8px; padding:9px 11px; border-radius:9px;
+  border:1px solid var(--line); background:var(--bg); color:var(--ink); font:inherit;
+  font-size:13.5px; resize:vertical}
+textarea:focus{outline:2px solid var(--accent); outline-offset:1px}
+.note{color:var(--muted); font-size:12px; margin-top:14px; line-height:1.45}
+</style>
+</head>
+<body>
+
+<div id="gate">
+  <div class="box">
+    <h1>Трекер подготовки</h1>
+    <p>Введите код доступа</p>
+    <input id="code" type="password" autocomplete="off" spellcheck="false" placeholder="· · · · · ·">
+    <div class="err" id="err"></div>
+  </div>
+</div>
+
+<div class="shell" id="shell">
+<header>
+  <p class="eyebrow">Алгебра · 72 билета</p>
+  <h1 class="t">Трекер подготовки</h1>
+  <p class="sub">Клик по билету переключает статус вперёд, Shift+клик — назад. Отметки хранятся в этом браузере.</p>
+</header>
+
+<div class="overall">
+  <div class="bar" id="bigbar"></div>
+  <div class="stats" id="stats"></div>
+  <div class="legend" id="legend"></div>
+</div>
+
+<div class="bar2">
+  <button class="btn" data-filter="flag" aria-pressed="false">только «спросить»</button>
+  <button class="btn" data-filter="weak" aria-pressed="false">слабые (серые и розовые)</button>
+  <button class="btn" data-filter="few" aria-pressed="false">меньше 3 проходов</button>
+  <button class="btn" data-filter="note" aria-pressed="false">с заметками</button>
+  <span class="grow"></span>
+  <button class="btn" id="exp">Скачать JSON</button>
+  <button class="btn" id="imp">Загрузить</button>
+  <button class="btn" id="rst">Сбросить</button>
+  <input type="file" id="file" accept="application/json" hidden>
+</div>
+
+<div id="grid"></div>
+</div>
+
+<div class="det" id="det">
+  <p class="pn"><span id="dnum"></span><button id="dclose" title="Закрыть">×</button></p>
+  <h3 id="dttl"></h3>
+  <div class="swatches" id="sws"></div>
+  <p class="swlabel" id="swlabel"></p>
+  <div class="row">
+    <span class="lb">проходы</span>
+    <span class="step"><button id="pminus">−</button><b id="pval">0</b><button id="pplus">+</button></span>
+    <span class="grow"></span>
+    <button class="btn" id="flagbtn" aria-pressed="false">спросить</button>
+  </div>
+  <textarea id="dnote" placeholder="Заметка: что именно не сходится, что спросить, где посмотреть…"></textarea>
+  <p class="note" id="dstamp"></p>
+</div>
+
+<script>
+/* ───────────── настройки ─────────────
+   Код доступа. Это КОСМЕТИЧЕСКАЯ заглушка: страница статическая, и любой,
+   кто откроет исходник, увидит проверку. Настоящей защиты тут нет и быть не может.
+   Сами отметки лежат в localStorage вашего браузера и на сервер не уходят,
+   поэтому чужой человек увидит пустой трекер даже без кода.
+   Чтобы сменить код — замените строку ниже.                                  */
+const CODE = "algebra";
+const KEY  = "vva-progress-v1";
+
+const STATUS = [
+  {c:"--s0", n:"не трогала",                  d:"Ещё не открывала."},
+  {c:"--s1", n:"читала, не поняла",           d:"Прочла, но не уложилось — вернуться."},
+  {c:"--s2", n:"понимаю в общих чертах",      d:"Объясню на пальцах, доказательство плаваю."},
+  {c:"--s3", n:"разобрала с доказательством", d:"Могу воспроизвести на бумаге."},
+  {c:"--s4", n:"могу рассказать вслух",       d:"Готово к экзамену."}
+];
+
+const SECTIONS = [
+  ["Векторные пространства и линейные отображения", 1, 17],
+  ["Группы", 18, 32],
+  ["Кольца, идеалы, комплексные числа", 33, 44],
+  ["Делимость", 45, 54],
+  ["Многочлены", 55, 66],
+  ["Элементарная теория чисел", 67, 72]
+];
+
+const T = {
+1:"Векторное пространство: определение, свойства, примеры",2:"Подпространство, линейная оболочка",
+3:"Матрицы с элементами из произвольных множеств",4:"Эквивалентные определения базиса",
+5:"Существование базиса",6:"Лемма о замене",7:"Количество элементов в базисе. Классификация",
+8:"Количество элементов конечного поля",9:"Внешняя и внутренняя прямая сумма пространств",
+10:"Линейные отображения и их матрицы",11:"Матрица перехода, замена координат",
+12:"Ядро и образ линейного отображения, слои",13:"Размерность ядра и образа; сумма и пересечение",
+14:"Факторпространство и его универсальное свойство",15:"Ранг набора, оператора, матрицы",
+16:"PDQ-разложение, равенство рангов",17:"Разложение Гаусса",
+18:"Группа, подгруппа, прямое произведение",19:"Порождённая подгруппа. Циклические группы",
+20:"Смежные классы, теорема Лагранжа",21:"Порядок элемента группы, свойства",
+22:"Нормальные подгруппы, гомоморфизмы, ядро и образ",23:"Эпиморфизм с данным ядром, факторгруппа",
+24:"Универсальное свойство факторгруппы, теорема о гомоморфизме",25:"Вторая теорема о гомоморфизме",
+26:"Третья теорема о гомоморфизме",27:"Сопряжённые элементы, порядок класса",
+28:"Группа автоморфизмов, внутренние и внешние",29:"Коммутант, абелианизация",
+30:"Симметрическая группа, циклическая запись",31:"Транспозиции, чётность перестановки",
+32:"Экспонента группы, критерий цикличности",
+33:"Кольцо, модуль, алгебра",34:"Гомоморфизмы модулей и алгебр",
+35:"Факторкольцо, эпиморфизм с данным ядром",36:"Универсальное свойство факторкольца",
+37:"Комплексные числа: определение, операции, геометрия",38:"Тригонометрическая и показательная форма",
+39:"Строение ℂ*, корни из единицы, zⁿ = w",40:"Максимальные идеалы, факторкольца",
+41:"Евклидовы кольца и кольца главных идеалов",42:"Взаимно простые идеалы",
+43:"Прямая сумма алгебр и идемпотенты",44:"Китайская теорема об остатках",
+45:"Неприводимые и простые элементы",46:"Равносильные определения нётерова кольца",
+47:"Существование разложения на неприводимые",48:"Факториальные кольца. Факториальность ОГИ",
+49:"Пример нефакториальной области",50:"Наибольший общий делитель",
+51:"Линейное представление НОД, алгоритм Евклида",52:"Локализация: универсальное свойство",
+53:"Конструкция локализации",54:"Поле частных, простейшие дроби",
+55:"Алгебра многочленов и её универсальное свойство",56:"Деление с остатком, Безу, число корней",
+57:"Конечная подгруппа мультипликативной группы поля",58:"Интерполяция Лагранжа и КТО",
+59:"Формальная производная и её свойства",60:"Кратность корня и дифференцирование",
+61:"Основная теорема алгебры",62:"Комплексные корни вещественных многочленов, ℝ[t]",
+63:"Лемма Гаусса: произведение примитивных",64:"Лемма Гаусса: неприводимость над полем частных",
+65:"Рациональные корни, целозамкнутость",66:"Факториальность кольца многочленов",
+67:"Функция Эйлера. Теорема Эйлера",68:"Функция Кармайкла для составного n",
+69:"Функция Кармайкла от pᵏ при p ≠ 2",70:"Функция Кармайкла от 2ᵏ",
+71:"Тест Ферма, псевдопростые, тест Эйлера",72:"Тест Миллера–Рабина"
+};
+
+/* ───────────── состояние ───────────── */
+let D = {};
+function load(){
+  try { D = JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch(e){ D = {}; }
+}
+function save(){
+  D._at = new Date().toISOString();
+  try { localStorage.setItem(KEY, JSON.stringify(D)); } catch(e){}
+}
+const get = n => D[n] || (D[n] = {s:0, p:0, f:false, n:""});
+const cvar = k => getComputedStyle(document.documentElement).getPropertyValue(k).trim();
+
+/* ───────────── заглушка ───────────── */
+const gate = document.getElementById("gate"), shell = document.getElementById("shell");
+function unlock(){
+  gate.style.display = "none"; shell.classList.add("on");
+  try { sessionStorage.setItem("vva-ok","1"); } catch(e){}
+  render();
+}
+document.getElementById("code").addEventListener("keydown", e => {
+  if (e.key !== "Enter") return;
+  if (e.target.value.trim() === CODE) unlock();
+  else { document.getElementById("err").textContent = "Не подходит"; e.target.value = ""; }
+});
+try { if (sessionStorage.getItem("vva-ok") === "1") unlock(); } catch(e){}
+document.getElementById("code").focus();
+
+/* ───────────── отрисовка ───────────── */
+let sel = null, filter = null;
+
+function render(){
+  load();
+  const grid = document.getElementById("grid");
+  grid.innerHTML = "";
+  SECTIONS.forEach(([name, a, b]) => {
+    const box = document.createElement("div");
+    box.className = "sec";
+    const nums = []; for (let n = a; n <= b; n++) nums.push(n);
+    const done = nums.filter(n => get(n).s >= 3).length;
+    box.innerHTML = `<h2>${name} <em>${a}–${b} · ${done} из ${nums.length} разобрано</em></h2>
+      <div class="minibar" data-mb="${a}"></div><div class="cells"></div>`;
+    const cells = box.querySelector(".cells");
+    nums.forEach(n => cells.appendChild(cellEl(n)));
+    grid.appendChild(box);
+    fillBar(box.querySelector(".minibar"), nums);
+  });
+  paintTop();
+  applyFilter();
+}
+
+function cellEl(n){
+  const d = get(n);
+  const c = document.createElement("button");
+  c.className = "cell"; c.type = "button"; c.dataset.n = n;
+  c.style.borderLeftColor = `var(${STATUS[d.s].c})`;
+  c.innerHTML = `<span class="num"><span>билет ${n}</span>${d.f ? '<span class="fl">◆</span>' : ""}</span>
+    <span class="ttl">${T[n]}</span>
+    <span class="dots">${[0,1,2,3,4].map(i => `<i class="${i < d.p ? "f" : ""}"></i>`).join("")}${d.p > 5 ? `<i class="f"></i>` : ""}</span>
+    ${d.n ? '<span class="nt">✎</span>' : ""}`;
+  c.title = `${STATUS[d.s].n}${d.p ? " · проходов: " + d.p : ""}${d.n ? "\n" + d.n : ""}`;
+  c.addEventListener("click", e => {
+    const cur = get(n);
+    cur.s = e.shiftKey ? (cur.s + 4) % 5 : (cur.s + 1) % 5;
+    save(); openDet(n); render();
+  });
+  return c;
+}
+
+function fillBar(el, nums){
+  const cnt = [0,0,0,0,0];
+  nums.forEach(n => cnt[get(n).s]++);
+  el.innerHTML = cnt.map((v,i) =>
+    v ? `<span style="width:${v / nums.length * 100}%;background:var(${STATUS[i].c})"></span>` : "").join("");
+}
+
+function paintTop(){
+  const all = Object.keys(T).map(Number);
+  fillBar(document.getElementById("bigbar"), all);
+  const cnt = [0,0,0,0,0]; let passes = 0, three = 0, flags = 0;
+  all.forEach(n => { const d = get(n); cnt[d.s]++; passes += d.p; if (d.p >= 3) three++; if (d.f) flags++; });
+  const ready = cnt[3] + cnt[4];
+  document.getElementById("stats").innerHTML =
+    `<span>готово к экзамену <b>${cnt[4]}</b></span>
+     <span>разобрано с доказательством <b>${ready}</b> из 72</span>
+     <span>⩾3 проходов <b>${three}</b></span>
+     <span>всего проходов <b>${passes}</b></span>
+     <span>помечено «спросить» <b>${flags}</b></span>
+     <span>не тронуто <b>${cnt[0]}</b></span>`;
+  document.getElementById("legend").innerHTML = STATUS.map((s,i) =>
+    `<i style="color:var(${s.c})">${s.n} — ${cnt[i]}</i>`).join("");
+}
+
+/* ───────────── карточка ───────────── */
+const det = document.getElementById("det");
+function openDet(n){
+  sel = n; const d = get(n);
+  det.classList.add("on");
+  document.getElementById("dnum").textContent = "билет " + n;
+  document.getElementById("dttl").textContent = T[n];
+  document.getElementById("sws").innerHTML = STATUS.map((s,i) =>
+    `<button class="sw" data-s="${i}" title="${s.n}" aria-pressed="${i === d.s}"
+      style="background:var(${s.c})"></button>`).join("");
+  document.getElementById("swlabel").textContent = STATUS[d.s].n + " — " + STATUS[d.s].d;
+  document.getElementById("pval").textContent = d.p;
+  document.getElementById("flagbtn").setAttribute("aria-pressed", d.f ? "true" : "false");
+  document.getElementById("dnote").value = d.n || "";
+  document.getElementById("dstamp").textContent = D._at
+    ? "последнее изменение: " + new Date(D._at).toLocaleString("ru-RU") : "";
+  det.querySelectorAll(".sw").forEach(b => b.addEventListener("click", () => {
+    get(n).s = +b.dataset.s; save(); openDet(n); render();
+  }));
+}
+document.getElementById("dclose").onclick = () => { det.classList.remove("on"); sel = null; };
+document.getElementById("pplus").onclick = () => { if (sel){ get(sel).p++; save(); openDet(sel); render(); } };
+document.getElementById("pminus").onclick = () => { if (sel && get(sel).p > 0){ get(sel).p--; save(); openDet(sel); render(); } };
+document.getElementById("flagbtn").onclick = () => { if (sel){ const d = get(sel); d.f = !d.f; save(); openDet(sel); render(); } };
+document.getElementById("dnote").addEventListener("input", e => {
+  if (!sel) return; get(sel).n = e.target.value; save();
+  const c = document.querySelector(`.cell[data-n="${sel}"] .nt`);
+  if (!c && e.target.value) render();
+});
+
+/* ───────────── фильтры ───────────── */
+document.querySelectorAll("[data-filter]").forEach(b => b.addEventListener("click", () => {
+  const f = b.dataset.filter;
+  filter = (filter === f) ? null : f;
+  document.querySelectorAll("[data-filter]").forEach(x =>
+    x.setAttribute("aria-pressed", x.dataset.filter === filter ? "true" : "false"));
+  applyFilter();
+}));
+function applyFilter(){
+  document.querySelectorAll(".cell").forEach(c => {
+    const d = get(+c.dataset.n);
+    let show = true;
+    if (filter === "flag") show = d.f;
+    if (filter === "weak") show = d.s <= 1;
+    if (filter === "few")  show = d.p < 3;
+    if (filter === "note") show = Boolean(d.n);
+    c.classList.toggle("hide", !show);
+  });
+}
+
+/* ───────────── бэкап ───────────── */
+document.getElementById("exp").onclick = () => {
+  const blob = new Blob([JSON.stringify(D, null, 1)], {type:"application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `progress-${new Date().toISOString().slice(0,10)}.json`;
+  a.click(); URL.revokeObjectURL(a.href);
+};
+document.getElementById("imp").onclick = () => document.getElementById("file").click();
+document.getElementById("file").addEventListener("change", e => {
+  const f = e.target.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = () => {
+    try { D = JSON.parse(r.result); save(); render(); }
+    catch(err){ alert("Не похоже на файл прогресса"); }
+  };
+  r.readAsText(f);
+});
+document.getElementById("rst").onclick = () => {
+  if (!confirm("Стереть все отметки? Скачайте JSON, если хотите сохранить.")) return;
+  D = {}; save(); det.classList.remove("on"); render();
+};
+
+if (window.matchMedia) window.matchMedia("(prefers-color-scheme: dark)")
+  .addEventListener("change", () => render());
+</script>
+</body>
+</html>
