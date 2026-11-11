@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+
+<html lang="ru">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>Нормальные формы — визуальная карта и строгие доказательства</title>
+<style>
+:root{
+  --bg:#07111f;--panel:#0f1d31;--panel2:#12243d;--edge:#36577e;--text:#e7eef9;--muted:#9fb3cb;
+  --blue:#78b8ff;--purple:#c7a1ff;--teal:#84e0c2;--gold:#f4d28f;--red:#ff9f9f;--accent:#91c4ff;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:linear-gradient(180deg,#06101c,#081321 20%,#09182a);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;line-height:1.62}
+a{color:var(--blue);text-decoration:none}
+a:hover{text-decoration:underline}
+.wrap{width:min(1320px,calc(100vw - 32px));margin:0 auto}
+header{padding:34px 0 18px;border-bottom:1px solid #203552;background:rgba(6,14,26,.9);position:static}
+header .top{display:flex;gap:20px;justify-content:space-between;align-items:flex-start;flex-wrap:wrap}
+h1{margin:0;font-size:clamp(28px,4.2vw,48px);line-height:1.05;letter-spacing:-.03em}
+.subtitle{margin-top:10px;color:var(--muted);font-size:15px;max-width:920px}
+.pills{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}.pill{background:#10243b;border:1px solid #284565;border-radius:999px;padding:8px 13px;color:#c9d9ed;font-size:13px}
+nav.quick{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px} nav.quick a{display:inline-block;background:#13253d;border:1px solid #294766;border-radius:11px;padding:9px 12px;font-size:14px;color:#eaf2ff}
+section{padding:34px 0}
+.section-title{font-size:28px;letter-spacing:-.03em;margin:0 0 8px}.section-lead{color:var(--muted);margin:0 0 22px;max-width:980px}
+.grid-forms{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px}
+.card{background:linear-gradient(180deg,#102035,#0d1a2d);border:1px solid #28415f;border-radius:22px;padding:18px;box-shadow:0 20px 40px rgba(0,0,0,.18)}
+.card h3{margin:0 0 8px;font-size:21px;letter-spacing:-.02em}.mini{color:var(--muted);font-size:13px;margin-bottom:10px}.tag{display:inline-block;font-size:12px;padding:4px 9px;border-radius:999px;border:1px solid #345b81;background:#11253e;color:#cbe2ff;margin-bottom:10px}
+.formula{background:#0a1423;border:1px solid #243a57;border-radius:16px;padding:12px 14px;margin:12px 0;font-family:'SFMono-Regular',Consolas,monospace;font-size:14px;overflow:auto;white-space:pre}
+.matrix{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:center;background:#0b1627;border:1px solid #263d5c;border-radius:16px;padding:12px;margin:12px 0}
+.mlabel{font-size:13px;color:#bdd1ea;font-weight:600}
+.mat{font-family:'SFMono-Regular',Consolas,monospace;font-size:13px;white-space:pre;line-height:1.35;color:#f1f6fd}
+.arrowline{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:12px 0}.abox{background:#122840;border:1px solid #2b4a6f;border-radius:12px;padding:8px 12px;color:#dceaff}.arrow{color:#7dbdff;font-weight:700}
+.card ul{margin:10px 0 0 18px;padding:0}.card li{margin:6px 0}
+.flowbox{background:linear-gradient(180deg,#0f1c30,#0b1628);border:1px solid #263f5e;border-radius:24px;padding:18px;overflow:auto}
+svg.map{display:block;min-width:1220px;height:auto}
+.nodebox{fill:#112239;stroke:#3a5f87;stroke-width:1.7}.node-text{font:600 15px Inter, sans-serif;fill:#eef5ff}.node-sub{font:12px Inter, sans-serif;fill:#9fb8d4}.edge{stroke:#678cb6;stroke-width:2;fill:none;marker-end:url(#arr)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:12px;color:var(--muted);font-size:13px}.legend span::before{content:'';display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:7px;vertical-align:-1px}.lg1::before{background:var(--purple)}.lg2::before{background:var(--blue)}.lg3::before{background:var(--teal)}
+.proof-layout{display:grid;grid-template-columns:320px minmax(0,1fr);gap:20px}
+.side{position:sticky;top:120px;align-self:start;background:linear-gradient(180deg,#0d1a2d,#0a1626);border:1px solid #243f5d;border-radius:22px;padding:16px}
+.side h3{margin:0 0 10px;font-size:18px}.side ul{margin:0;padding-left:18px}.side li{margin:7px 0}.side a{color:#dce9ff}
+.proofs{display:grid;gap:18px}
+.proof{background:linear-gradient(180deg,#102036,#0d1a2f);border:1px solid #274565;border-radius:22px;padding:22px;scroll-margin-top:110px}
+.proof:target{outline:2px solid #86bfff;box-shadow:0 0 0 5px rgba(120,184,255,.12)}
+.proof h3{margin:0 0 8px;font-size:24px;letter-spacing:-.02em}.proof .meta{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}.proof .meta span{font-size:12px;padding:4px 10px;border-radius:999px;background:#12243c;border:1px solid #355578;color:#d8e6f7}
+.theorem{background:#0a1423;border-left:4px solid var(--blue);padding:14px 16px;border-radius:14px;margin:14px 0}
+.steps{margin:14px 0 0 0;padding-left:20px}.steps li{margin:10px 0}
+.note{background:#0c1728;border:1px dashed #335070;border-radius:14px;padding:12px 14px;color:#b8cbe0;margin-top:14px}
+.proof details{background:#0c1728;border:1px solid #27415f;border-radius:14px;margin-top:14px;padding:0 14px}.proof summary{cursor:pointer;font-weight:650;padding:13px 0}.proof details > div{padding:0 0 14px;color:#d8e3f2}
+small.code{font-family:'SFMono-Regular',Consolas,monospace;color:#b4d2f2}
+footer{padding:32px 0 50px;color:var(--muted)}
+@media (max-width:1120px){.grid-forms{grid-template-columns:repeat(2,minmax(0,1fr))}.proof-layout{grid-template-columns:1fr}.side{position:static}}
+@media (max-width:760px){.wrap{width:min(100vw - 18px,1320px)}header{padding:20px 0 14px}.grid-forms{grid-template-columns:1fr}.section-title{font-size:24px}.proof h3{font-size:21px}.card{padding:16px}.proof{padding:18px}}
+
+/* Beautiful, responsive mathematics (MathJax SVG). */
+.formula{white-space:normal;font-family:inherit;font-size:1rem;line-height:1.55;padding:14px 16px;overflow-x:auto;overflow-y:hidden;scrollbar-width:thin}
+.formula mjx-container[display="true"]{margin:.25em auto!important;min-width:max-content}
+.mat{white-space:normal;font-family:inherit;font-size:1rem;overflow-x:auto;scrollbar-width:thin}
+.mat mjx-container[display="true"]{margin:.45em auto!important;min-width:max-content}
+.matrix{grid-template-columns:1fr;gap:3px}
+@media(max-width:760px){.formula,.mat{font-size:.90rem;padding:12px}.proof .formula{margin-left:-3px;margin-right:-3px}}
+</style>
+<script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']],processEscapes:true},svg:{fontCache:'global'},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};</script><script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script></head>
+<body>
+<header>
+<div class="wrap top">
+<div>
+<h1>Нормальные формы: <span style="color:var(--blue)">карта зависимостей + визуальные формы + строгие доказательства</span></h1>
+</div>
+<nav class="quick">
+<a href="#forms">Визуальные формы</a>
+<a href="#map">Карта зависимостей</a>
+<a href="#proofs">Доказательства</a>
+</nav>
+</div>
+</header>
+<main class="wrap">
+<section id="forms">
+<h2 class="section-title">1. Как выглядят формы и какие преобразования к ним ведут</h2>
+<p class="section-lead">Здесь не только названия, но и сами матрицы. Для каждой формы показано: итоговый вид, допустимые преобразования и то, какие данные сохраняются.</p>
+<div class="grid-forms">
+<article class="card">
+<div class="tag">Форма Смита · над ОГИ</div>
+<h3>Нормальная форма Смита</h3>
+<div class="mini">Для произвольной матрицы <small class="code">A∈M<sub>n,k</sub>(R)</small>, где <small class="code">R</small> — область главных идеалов.</div>
+<div class="matrix"><div class="mlabel">Итоговая форма</div><div class="mat">\[\begin{gathered}\operatorname{diag}(\alpha_1,\alpha_2,\ldots,\alpha_r,0,\ldots)\\ \alpha_1\mid\alpha_2\mid\cdots\mid\alpha_r\end{gathered}\]</div></div>
+<div class="arrowline"><div class="abox">A</div><div class="arrow">⟶</div><div class="abox">B A C</div><div class="arrow">=</div><div class="abox">diag(α₁,…,αᵣ,0,…)</div></div>
+<div class="mini">Разрешены <b>обратимые</b> преобразования строк и столбцов: <small class="code">B∈GLₙ(R), C∈GL_k(R)</small>.</div>
+<ul>
+<li>главная идея: сделать первый столбец вида <small class="code">e₁α</small>, затем максимизировать идеал <small class="code">αR</small>;</li>
+<li>после этого первый элемент делит всю матрицу;</li>
+<li>дальше — индукция по меньшему блоку.</li>
+</ul>
+</article>
+<article class="card">
+<div class="tag">Фробениус · над полем</div>
+<h3>Нормальная форма Фробениуса</h3>
+<div class="mini">Для оператора <small class="code">L:V→V</small> после выбора подходящего базиса.</div>
+<div class="matrix"><div class="mlabel">Одна клетка</div><div class="mat">\[\begin{pmatrix}0&amp;0&amp;\cdots&amp;0&amp;a_1\\1&amp;0&amp;\cdots&amp;0&amp;a_2\\0&amp;1&amp;\cdots&amp;0&amp;a_3\\\vdots&amp;\vdots&amp;\ddots&amp;\vdots&amp;\vdots\\0&amp;0&amp;\cdots&amp;1&amp;a_d\end{pmatrix}\]</div></div>
+<div class="arrowline"><div class="abox">L как F[t]-модуль</div><div class="arrow">⟶</div><div class="abox">⊕ F[t]/(p_j)</div><div class="arrow">⟶</div><div class="abox">diag(C(p₁),…,C(p_s))</div></div>
+<ul>
+<li>исходный объект — не матрица, а оператор;</li>
+<li>переходим к структуре <small class="code">F[t]</small>-модуля через <small class="code">p·v:=p(L)v</small>;</li>
+<li>каждое циклическое слагаемое даёт одну клетку Фробениуса.</li>
+</ul>
+</article>
+<article class="card">
+<div class="tag">Жордан · через собственные числа</div>
+<h3>Жорданова форма (спектральная ветка)</h3>
+<div class="mini">Работает над алгебраически замкнутым полем.</div>
+<div class="matrix"><div class="mlabel">Один блок</div><div class="mat">\[J_k(\lambda)=\begin{pmatrix}\lambda&amp;1&amp;0&amp;\cdots&amp;0\\0&amp;\lambda&amp;1&amp;\ddots&amp;\vdots\\\vdots&amp;\ddots&amp;\ddots&amp;\ddots&amp;0\\0&amp;\cdots&amp;0&amp;\lambda&amp;1\\0&amp;\cdots&amp;\cdots&amp;0&amp;\lambda\end{pmatrix}\]</div></div>
+<div class="arrowline"><div class="abox">V=⊕U_λ</div><div class="arrow">⟶</div><div class="abox">N_λ=L−λI нильпотентен</div><div class="arrow">⟶</div><div class="abox">базис из цепочек</div></div>
+<ul>
+<li>теорема 3.1 даёт разложение по корневым подпространствам;</li>
+<li>на каждом <small class="code">U_λ</small> остаётся нильпотентный оператор;</li>
+<li>цепочки <small class="code">Nv₁=0, Nv_i=v_{i−1}</small> дают блоки.</li>
+</ul>
+</article>
+<article class="card">
+<div class="tag">Жордан · через модули</div>
+<h3>Жорданова форма (модульная ветка)</h3>
+<div class="mini">То же утверждение, но другой путь доказательства.</div>
+<div class="matrix"><div class="mlabel">Циклическое слагаемое</div><div class="mat">\[\begin{gathered}M=F[t]/\bigl((t-\lambda)^k\bigr)\\v_i=[(t-\lambda)^{k-i}]\\(L-\lambda I)v_1=0,\quad (L-\lambda I)v_i=v_{i-1}\end{gathered}\]</div></div>
+<div class="arrowline"><div class="abox">V как F[t]-модуль</div><div class="arrow">⟶</div><div class="abox">⊕ F[t]/(t−λ)^k</div><div class="arrow">⟶</div><div class="abox">блоки J_k(λ)</div></div>
+<ul>
+<li>используется классификация конечнопорожденных модулей над ОГИ;</li>
+<li>поскольку поле алгебраически замкнуто, неприводимые многочлены линейны;</li>
+<li>единственность блоков идёт из единственности разложения модулей.</li>
+</ul>
+</article>
+</div>
+</section>
+<section id="map">
+<h2 class="section-title">2. Карта зависимостей</h2>
+<p class="section-lead">Клик по узлу переводит к подробному доказательству. Фиолетовая ветка — через собственные числа и цепочки. Синяя — через свободные модули, форму Смита и классификацию модулей. Зелёные узлы — сами нормальные формы.</p>
+<div class="flowbox">
+<svg aria-label="Карта зависимостей нормальных форм" class="map" viewbox="0 0 1220 640" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<marker id="arr" markerheight="9" markerwidth="9" orient="auto" refx="7" refy="4.5"><path d="M0,0 L8,4.5 L0,9" fill="none" stroke="#7fa7d2" stroke-width="1.5"></path></marker>
+</defs>
+<path class="edge" d="M180 110 H320"></path><path class="edge" d="M460 110 H600"></path><path class="edge" d="M740 110 H880"></path><path class="edge" d="M180 320 H320"></path><path class="edge" d="M460 320 H600"></path><path class="edge" d="M740 320 H880"></path><path class="edge" d="M1020 320 V455 H880"></path><path class="edge" d="M740 530 H880"></path><path class="edge" d="M600 320 V500 H530"></path><path class="edge" d="M1020 110 V210 H1020 V500 H1040"></path>
+<a href="#kerprod"><rect class="nodebox" fill="#26193b" height="80" rx="18" ry="18" width="150" x="30" y="70"></rect><text class="node-text" x="45" y="100">Теорема 3.1</text><text class="node-sub" x="45" y="122">Ker(pq)=Ker p ⊕ Ker q</text></a>
+<a href="#roots"><rect class="nodebox" fill="#26193b" height="80" rx="18" ry="18" width="140" x="320" y="70"></rect><text class="node-text" x="338" y="100">Корневые</text><text class="node-sub" x="338" y="122">подпространства</text></a>
+<a href="#chains"><rect class="nodebox" fill="#26193b" height="80" rx="18" ry="18" width="140" x="600" y="70"></rect><text class="node-text" x="617" y="100">Теорема 3.2</text><text class="node-sub" x="617" y="122">жордановы цепочки</text></a>
+<a href="#jordan-spectral"><rect class="nodebox" fill="#17312d" height="80" rx="18" ry="18" width="190" x="880" y="70"></rect><text class="node-text" x="900" y="100">Жорданова форма</text><text class="node-sub" x="900" y="122">через собственные числа</text></a>
+<a href="#free"><rect class="nodebox" fill="#132540" height="80" rx="18" ry="18" width="150" x="30" y="280"></rect><text class="node-text" x="46" y="309">Свободные</text><text class="node-sub" x="46" y="331">модули и ранги</text></a>
+<a href="#smith-lemmas"><rect class="nodebox" fill="#132540" height="80" rx="18" ry="18" width="140" x="320" y="280"></rect><text class="node-text" x="337" y="309">Леммы 8.2, 8.4</text><text class="node-sub" x="337" y="331">приведение столбца</text></a>
+<a href="#smith"><rect class="nodebox" fill="#17312d" height="80" rx="18" ry="18" width="140" x="600" y="280"></rect><text class="node-text" x="625" y="309">Смит</text><text class="node-sub" x="620" y="331">теорема 8.1</text></a>
+<a href="#submodules"><rect class="nodebox" fill="#132540" height="80" rx="18" ry="18" width="190" x="880" y="280"></rect><text class="node-text" x="900" y="309">Подмодули Rⁿ</text><text class="node-sub" x="900" y="331">следствия 8.5, 8.6</text></a>
+<a href="#classification"><rect class="nodebox" fill="#132540" height="80" rx="18" ry="18" width="190" x="880" y="490"></rect><text class="node-text" x="900" y="519">Классификация</text><text class="node-sub" x="900" y="541">лемма 9.1, теорема 9.3</text></a>
+<a href="#frobenius"><rect class="nodebox" fill="#17312d" height="80" rx="18" ry="18" width="110" x="1080" y="490"></rect><text class="node-text" x="1097" y="519">Фробениус</text><text class="node-sub" x="1097" y="541">теорема 10.1</text></a>
+<a href="#uniqueness"><rect class="nodebox" fill="#132540" height="80" rx="18" ry="18" width="170" x="430" y="490"></rect><text class="node-text" x="446" y="519">Единственность</text><text class="node-sub" x="446" y="541">лемма 11.1 и билет 19</text></a>
+<a href="#jordan-module"><rect class="nodebox" fill="#17312d" height="80" rx="18" ry="18" width="140" x="620" y="490"></rect><text class="node-text" x="638" y="519">Жордан</text><text class="node-sub" x="638" y="541">через модули</text></a>
+</svg>
+<div class="legend"><span class="lg1">спектральная ветка</span><span class="lg2">модульная ветка</span><span class="lg3">нормальные формы</span></div>
+</div>
+</section>
+<section id="proofs">
+<h2 class="section-title">3. Подробные доказательства</h2>
+<p class="section-lead">Ниже — не короткие тезисы, а развернутые доказательства. Формулировки и обозначения ориентированы на Степанова; где в конспекте доказательство опущено, это отдельно отмечено.</p>
+<div class="proof-layout">
+<aside class="side">
+<h3>Содержание</h3>
+<ul>
+<li><a href="#kerprod">Теорема 3.1</a></li>
+<li><a href="#roots">Разложение на корневые подпространства</a></li>
+<li><a href="#chains">Теорема 3.2</a></li>
+<li><a href="#jordan-spectral">Жорданова форма: путь I</a></li>
+<li><a href="#free">Свободные модули и ранг</a></li>
+<li><a href="#smith-lemmas">Леммы 8.2 и 8.4</a></li>
+<li><a href="#smith">Форма Смита</a></li>
+<li><a href="#submodules">Подмодули свободного модуля</a></li>
+<li><a href="#classification">Классификация модулей</a></li>
+<li><a href="#uniqueness">Единственность разложения</a></li>
+<li><a href="#frobenius">Фробениус</a></li>
+<li><a href="#jordan-module">Жорданова форма: путь II</a></li>
+</ul>
+</aside>
+<div class="proofs">
+<article class="proof" id="kerprod">
+<h3>Теорема 3.1. Ядро произведения взаимно простых многочленов</h3>
+<div class="meta"><span>Билет 13</span><span>§3</span><span>спектральная ветка</span></div>
+<div class="theorem"><b>Формулировка.</b> Пусть <small class="code">L:V→V</small> — линейный оператор над полем <small class="code">F</small>; конечномерность пространства не предполагается. Если <small class="code">p,q∈F[t]</small> взаимно просты, то
+            <div class="formula">\[\ker(p(L)q(L))=\ker p(L)\oplus\ker q(L)\]</div>
+</div>
+<ol class="steps">
+<li><b>Тождество Безу.</b> Из взаимной простоты многочленов следует существование <small class="code">f,h∈F[t]</small> таких, что <small class="code">fp+hq=1</small>. После подстановки оператора получаем
+              <div class="formula">\[f(L)p(L)+h(L)q(L)=\operatorname{id}_V\]</div>
+              Здесь используется то, что отображение <small class="code">p↦p(L)</small> является гомоморфизмом алгебр. В частности, все многочлены от <small class="code">L</small> коммутируют друг с другом.</li>
+<li><b>Включение слева в сумму.</b> Пусть <small class="code">x∈Ker(p(L)q(L))</small>. Тогда из равенства выше
+              <div class="formula">\[x=f(L)p(L)x+h(L)q(L)x\]</div>
+              Обозначим <small class="code">u=f(L)p(L)x</small>, <small class="code">v=h(L)q(L)x</small>. Тогда
+              <div class="formula">\[\begin{aligned}q(L)u&amp;=f(L)p(L)q(L)x=0,\\p(L)v&amp;=h(L)p(L)q(L)x=0.\end{aligned}\]</div>
+              Следовательно, <small class="code">u∈Ker q(L)</small>, <small class="code">v∈Ker p(L)</small>, а значит, <small class="code">x∈Ker p(L)+Ker q(L)</small>.</li>
+<li><b>Обратное включение.</b> Если <small class="code">x∈Ker p(L)</small>, то <small class="code">p(L)x=0</small>, следовательно, и <small class="code">p(L)q(L)x=0</small>. Аналогично для <small class="code">y∈Ker q(L)</small>. Поэтому произведение <small class="code">p(L)q(L)</small> обращает в нуль сумму <small class="code">Ker p(L)+Ker q(L)</small>.</li>
+<li><b>Прямота суммы.</b> Пусть <small class="code">z∈Ker p(L)∩Ker q(L)</small>. Тогда
+              <div class="formula">\[z=f(L)p(L)z+h(L)q(L)z=0\]</div>
+              Значит, пересечение нулевое, то есть сумма прямая.</li>
+</ol>
+<div class="note">По индукции отсюда выводится и более общий факт: если <small class="code">p₁,…,p_s</small> попарно взаимно просты, то <small class="code">Ker ∏p_i(L)=⊕Ker p_i(L)</small>.</div>
+</article>
+<article class="proof" id="roots">
+<h3>Разложение на корневые подпространства</h3>
+<div class="meta"><span>Билет 13</span><span>§3</span><span>между теоремами 3.1 и 3.2</span></div>
+<div class="theorem"><b>Утверждение.</b> Пусть <small class="code">dim V&lt;∞</small>, поле <small class="code">F</small> алгебраически замкнуто, а минимальный многочлен имеет вид
+            <div class="formula">\[\varphi_L(t)=\prod_{i=1}^{s}(t-\lambda_i)^{k_i},\qquad \lambda_i\ne\lambda_j\ (i\ne j)\]</div>
+            Тогда
+            <div class="formula">\[V=\bigoplus_{i=1}^{s}U_i,\qquad U_i:=\ker(L-\lambda_i I)^{k_i}\]</div>
+</div>
+<ol class="steps">
+<li>Так как многочлены <small class="code">(t-λ_i)^{k_i}</small> попарно взаимно просты, к их произведению применяется теорема 3.1. Получаем
+            <div class="formula">\[\ker\varphi_L(L)=\bigoplus_{i=1}^{s}\ker(L-\lambda_i I)^{k_i}\]</div></li>
+<li>Но по определению минимального многочлена <small class="code">φ_L(L)=0</small>, значит <small class="code">Ker φ_L(L)=V</small>. Следовательно,
+            <div class="formula">\[V=\bigoplus_{i=1}^{s}U_i\]</div></li>
+<li>Каждое <small class="code">U_i</small> инвариантно относительно <small class="code">L</small>, потому что для <small class="code">v∈U_i</small> имеем
+            <div class="formula">\[(L-\lambda_i I)^{k_i}(Lv)=L(L-\lambda_i I)^{k_i}v=0\]</div></li>
+<li>На пространстве <small class="code">U_i</small> оператор <small class="code">A_i=(L-λ_iI)|_{U_i}</small> нильпотентен, так как <small class="code">A_i^{k_i}=0</small>. Поэтому задача сводится к описанию нильпотентного оператора в специальном базисе.</li>
+</ol>
+</article>
+<article class="proof" id="chains">
+<h3>Теорема 3.2. Для нильпотентного оператора существует базис из жордановых цепочек</h3>
+<div class="meta"><span>Билет 13</span><span>§3</span><span>дополнение к конспекту</span></div>
+<div class="theorem"><b>Формулировка.</b> Пусть <small class="code">A:U→U</small> — нильпотентный оператор на конечномерном пространстве. Тогда в <small class="code">U</small> существует базис, состоящий из жордановых цепочек, то есть наборов ненулевых векторов <small class="code">v₁,…,v_k</small> со свойствами
+          <div class="formula">\[\begin{cases} A(v_1)=0,\\ A(v_j)=v_{j-1},&amp;2\le j\le k.\end{cases}\]</div></div>
+<ol class="steps">
+<li><b>Индукция по размерности.</b> Если <small class="code">A=0</small>, то любой базис уже состоит из цепочек длины <small class="code">1</small>. Предположим теперь, что <small class="code">A≠0</small>.</li>
+<li><b>Переход к образу.</b> Обозначим <small class="code">W=Im A</small>. Так как нильпотентный ненулевой оператор не может быть обратимым, <small class="code">dim W &lt; dim U</small>. Подпространство <small class="code">W</small> инвариантно, а ограничение <small class="code">A|_W</small> тоже нильпотентно.</li>
+<li><b>Индукционное предположение на <small class="code">W</small>.</b> В пространстве <small class="code">W</small> существует базис из цепочек
+            <div class="formula">\[w_{j,1},\ldots,w_{j,\ell_j},\qquad 1\le j\le r\]</div>
+            Первые векторы этих цепочек образуют базис пространства <small class="code">W∩Ker A</small>, а классы последних векторов <small class="code">w_{j,ℓ_j}</small> образуют базис фактора <small class="code">W/A(W)</small>.</li>
+<li><b>Подъём последних векторов.</b> Поскольку каждый <small class="code">w_{j,ℓ_j}</small> лежит в <small class="code">Im A</small>, можно выбрать <small class="code">v_j∈U</small> так, что <small class="code">Av_j=w_{j,ℓ_j}</small>. Далее дополним базис <small class="code">w_{1,1},…,w_{r,1}</small> пространства <small class="code">W∩Ker A</small> до базиса всего <small class="code">Ker A</small> векторами <small class="code">z_1,…,z_h</small>.</li>
+<li><b>Линейная независимость полученного набора.</b> Рассмотрим равенство
+            <div class="formula">\[w+\sum_j c_jv_j+\sum_a d_az_a=0,\qquad w\in W\]</div>
+            Применим к нему <small class="code">A</small> и перейдём к фактору <small class="code">W/A(W)</small>. Все классы <small class="code">Aw</small> и <small class="code">Az_a</small> исчезают, а остаётся
+            <div class="formula">\[\sum_j c_jw_{j,\ell_j}=0\quad\text{в }W/A(W)\]</div>
+            По выбору классов <small class="code">w_{j,ℓ_j}</small> отсюда <small class="code">c_j=0</small>. Тогда исходное равенство упрощается до <small class="code">w+∑_a d_a z_a=0</small>. Правая сумма лежит в <small class="code">Ker A</small>, следовательно, <small class="code">w∈W∩Ker A</small>. Но векторы <small class="code">z_a</small> были выбраны дополнением к базису <small class="code">W∩Ker A</small>, значит все <small class="code">d_a=0</small>, а затем и <small class="code">w=0</small>.</li>
+<li><b>Подсчёт числа векторов.</b> Число полученных независимых векторов равно
+            <div class="formula">\[\dim W+r+h=\dim(\operatorname{Im}A)+\dim(\ker A)=\dim U\]</div>
+            поэтому они образуют базис пространства <small class="code">U</small>. При этом цепочки из <small class="code">W</small> просто удлинились добавлением векторов <small class="code">v_j</small>, а каждый <small class="code">z_a</small> даёт цепочку длины <small class="code">1</small>. Теорема доказана.</li>
+</ol>
+<div class="note">Именно это место у Степанова дано без полного доказательства; здесь шаг расписан полностью.</div>
+</article>
+<article class="proof" id="jordan-spectral">
+<h3>Жорданова форма: первое доказательство (через собственные числа и цепочки)</h3>
+<div class="meta"><span>Билеты 11, 13</span><span>существование</span><span>спектральная ветка</span></div>
+<div class="theorem"><b>Теорема.</b> Пусть <small class="code">V</small> конечномерно над алгебраически замкнутым полем <small class="code">F</small>. Тогда существует базис, в котором матрица оператора <small class="code">L</small> блочно-диагональна с жордановыми блоками <small class="code">J_k(λ)</small>.</div>
+<ol class="steps">
+<li>Разлагаем минимальный многочлен <small class="code">φ_L</small> на линейные множители и по предыдущему пункту получаем разложение
+            <div class="formula">\[\begin{aligned} V&amp;=\bigoplus_i U_i,\\ U_i&amp;=\ker(L-\lambda_iI)^{k_i}.\end{aligned}\]</div></li>
+<li>На каждом <small class="code">U_i</small> вводим оператор <small class="code">A_i=(L-λ_iI)|_{U_i}</small>. Он нильпотентен.</li>
+<li>По теореме 3.2 в каждом <small class="code">U_i</small> существует базис из цепочек
+            <div class="formula">\[\begin{cases}A_i(v_1)=0,\\A_i(v_j)=v_{j-1},&amp;j&gt;1.\end{cases}\]</div></li>
+<li>Переходим от <small class="code">A_i</small> к <small class="code">L</small>:
+            <div class="formula">\[\begin{cases}Lv_1=\lambda_iv_1,\\Lv_j=v_{j-1}+\lambda_iv_j,&amp;j&gt;1.\end{cases}\]</div>
+            В базисе <small class="code">(v_1,…,v_k)</small> это даёт матрицу жорданова блока <small class="code">J_k(λ_i)</small>.</li>
+<li>Объединяя базисы всех цепочек для всех собственных чисел, получаем базис всего пространства <small class="code">V</small>, в котором матрица <small class="code">L</small> имеет жорданов вид.</li>
+</ol>
+<details><summary>Что именно здесь использовано из блока собственных чисел?</summary><div>Используются: понятие собственного числа, связь корней минимального многочлена с собственными числами, разложение по корневым подпространствам и описание нильпотентной части через цепочки. Это и есть «доказательство без модулей» из билета 13.</div></details>
+</article>
+<article class="proof" id="free">
+<h3>Свободные модули и ранг</h3>
+<div class="meta"><span>Билеты 14–15</span><span>подготовка к Смиту</span></div>
+<div class="theorem"><b>Основные факты.</b> 1) Свободный модуль <small class="code">F(X)</small> обладает универсальным свойством; 2) число элементов конечного базиса определено однозначно; 3) над ОГИ орбиты столбцов действия <small class="code">GL_n(R)</small> классифицируются идеалом их координат.</div>
+<ol class="steps">
+<li><b>Универсальное свойство.</b> Если <small class="code">f:X→M</small> — произвольная функция, то существует единственный гомоморфизм <small class="code">\tilde f:F(X)→M</small>, продолжающий <small class="code">f</small>. Доказательство строится по формуле
+            <div class="formula">\[\widetilde f\!\left(\sum_{x\in X}i(x)r_x\right)=\sum_{x\in X}f(x)r_x\]</div>
+            Корректность обеспечивается единственностью коэффициентов в базисном разложении.</li>
+<li><b>Конструкция.</b> Модуль <small class="code">F(X)</small> можно реализовать как множество финитных функций <small class="code">X→R</small>; базис задают характеристические функции <small class="code">1_x</small>.</li>
+<li><b>Однозначность ранга.</b> Если у одного и того же свободного модуля два конечных базиса из <small class="code">n</small> и <small class="code">m</small> элементов, то матрицы перехода <small class="code">A∈M_{n,m}(R)</small> и <small class="code">B∈M_{m,n}(R)</small> удовлетворяют <small class="code">AB=I_n</small>, <small class="code">BA=I_m</small>. Переходя к фактору по максимальному идеалу <small class="code">\mathfrak m</small>, получаем взаимно обратные линейные отображения между пространствами размерностей <small class="code">n</small> и <small class="code">m</small>; отсюда <small class="code">n=m</small>.</li>
+<li><b>Орбиты столбцов.</b> Для столбца <small class="code">x=(x_1,…,x_n)^T</small> обозначаем <small class="code">I(x)=x_1R+…+x_nR</small>. Этот идеал постоянен на орбите действия <small class="code">GL_n(R)</small>. Над ОГИ, наоборот, он полностью определяет орбиту: это будет следствием леммы 8.2.</li>
+</ol>
+</article>
+<article class="proof" id="smith-lemmas">
+<h3>Леммы 8.2 и 8.4: приведение столбца и улучшение ведущего элемента</h3>
+<div class="meta"><span>Билеты 15–16</span><span>ключ к форме Смита</span></div>
+<div class="theorem"><b>Лемма 8.2.</b> Пусть <small class="code">R</small> — ОГИ. Для любого столбца <small class="code">x∈R^n</small> существует <small class="code">B∈GL_n(R)</small> такая, что
+          <div class="formula">\[Bx=e_1^{*}\alpha,\qquad\alpha=\gcd(x_1,\ldots,x_n)\]</div>
+<b>Лемма 8.4.</b> Если матрица <small class="code">A∈M_{n,2}(R)</small> имеет первый столбец <small class="code">e_1^*α</small>, но не все элементы делятся на <small class="code">α</small>, то можно обратимыми преобразованиями строк и столбцов заменить этот первый столбец на <small class="code">e_1^*β</small> с более крупным идеалом <small class="code">αR⊊βR</small>.</div>
+<details open=""><summary>Доказательство леммы 8.2</summary><div>
+<ol class="steps">
+<li>Индукция по <small class="code">n</small>. При <small class="code">n=1</small> всё очевидно.</li>
+<li>Для последних двух координат записываем <small class="code">x_{n-1}=da</small>, <small class="code">x_n=db</small>, где <small class="code">d=gcd(x_{n-1},x_n)</small>.</li>
+<li>По тождеству Безу существуют <small class="code">r,s</small> такие, что <small class="code">ar+bs=1</small>. Тогда матрица
+              <div class="formula">\[\begin{pmatrix}r&amp;s\\-b&amp;a\end{pmatrix}\]</div>
+              обратима и переводит столбец <small class="code">(x_{n-1},x_n)^T</small> в <small class="code">(d,0)^T</small>.</li>
+<li>Дополняем этот блок единичной матрицей на первых <small class="code">n−2</small> координатах. Получаем столбец <small class="code">(x_1,…,x_{n-2},d,0)^T</small>. По индукции первые <small class="code">n−1</small> координат приводятся к <small class="code">(α,0,…,0)^T</small>, где <small class="code">α=gcd(x_1,…,x_n)</small>.</li>
+</ol>
+</div></details>
+<details><summary>Доказательство леммы 8.4</summary><div>
+<ol class="steps">
+<li>Пусть в некотором столбце есть элемент, не делящийся на <small class="code">α</small>. При необходимости прибавляем соответствующую строку к первой, чтобы уже элемент <small class="code">a_{12}</small> не делился на <small class="code">α</small>, но первый столбец оставался <small class="code">e_1^*α</small>.</li>
+<li>Применяем лемму 8.2 к вектору <small class="code">(α,a_{12})^T</small>. Получаем обратимую матрицу <small class="code">Q∈GL_2(R)</small>, переводящую его в <small class="code">(δ,0)^T</small>, где <small class="code">δ=gcd(α,a_{12})</small>. Это действие реализуется обратимым преобразованием двух столбцов.</li>
+<li>Затем применяем лемму 8.2 к новому первому столбцу целой матрицы и получаем <small class="code">e_1^*β</small>, где <small class="code">β=gcd(δ,d_{21},…,d_{n1})</small>.</li>
+<li>Поскольку <small class="code">α∤a_{12}</small>, имеем строгое включение <small class="code">αR⊊δR</small>; а из определения <small class="code">β</small> следует <small class="code">δR⊆βR</small>. Значит, <small class="code">αR⊊βR</small>.</li>
+</ol>
+</div></details>
+</article>
+<article class="proof" id="smith">
+<h3>Теорема 8.1. Нормальная форма Смита</h3>
+<div class="meta"><span>Билет 16</span><span>теорема 8.1</span><span>форма матрицы над ОГИ</span></div>
+<div class="theorem"><b>Формулировка.</b> Для любой матрицы <small class="code">A∈M_{n,k}(R)</small> над ОГИ существуют <small class="code">B∈GL_n(R)</small> и <small class="code">C∈GL_k(R)</small> такие, что
+          <div class="formula">\[BAC=\operatorname{diag}(\alpha_1,\ldots,\alpha_m,0,\ldots),\quad \alpha_i\ne0,\quad\alpha_i\mid\alpha_{i+1}\]</div></div>
+<ol class="steps">
+<li><b>Множество достижимых первых элементов.</b> Если <small class="code">A≠0</small>, рассмотрим множество
+            <div class="formula">\[S=\left\{\gamma\in R\ \middle|\ \exists B,C:\ (BAC)_{*1}=e_1^{*}\gamma\right\}\]</div>
+            По лемме 8.2 это множество непусто. Так как <small class="code">R</small> — ОГИ, семейство идеалов <small class="code">γR</small>, <small class="code">γ∈S</small>, имеет максимальный элемент <small class="code">αR</small>. Выберем матрицу <small class="code">D=BAC</small> с первым столбцом <small class="code">e_1^*α</small>.</li>
+<li><b>Первый элемент делит всю матрицу.</b> Предположим противное: в каком-то столбце <small class="code">j&gt;1</small> есть элемент, не делящийся на <small class="code">α</small>. Тогда к первым двум столбцам (первому и <small class="code">j</small>-му) можно применить лемму 8.4 и получить достижимый первый столбец <small class="code">e_1^*β</small> с <small class="code">αR⊊βR</small>. Это противоречит максимальности идеала <small class="code">αR</small>. Значит, каждый элемент <small class="code">D</small> делится на <small class="code">α</small>.</li>
+<li><b>Очистка первой строки.</b> Для каждого <small class="code">j&gt;1</small> вычитаем из <small class="code">j</small>-го столбца первый, умноженный на <small class="code">d_{1j}/α</small>. Поскольку <small class="code">α|d_{1j}</small>, это корректная обратимая операция над столбцами. В результате все элементы первой строки вне позиции <small class="code">(1,1)</small> обнуляются, а матрица принимает вид
+            <div class="formula">\[\begin{pmatrix}\alpha&amp;0\\0&amp;\alpha A\prime\end{pmatrix}\]</div></li>
+<li><b>Индукция.</b> Применяем теорему к матрице <small class="code">A'</small> меньшего размера. После приведения её диагональные элементы будут <small class="code">β_1|…|β_r</small>. Тогда исходная матрица приводится к диагонали
+            <div class="formula">\[\alpha,\ \alpha\beta_1,\ldots,\alpha\beta_r,\ 0,\ldots\]</div>
+            и делимость <small class="code">α|αβ_1|…|αβ_r</small> очевидна.</li>
+</ol>
+<div class="note">Это доказательство даёт именно существование формы Смита с цепочкой делимости. Единственность разложения модулей ещё не использовалась.</div>
+</article>
+<article class="proof" id="submodules">
+<h3>Следствия 8.5 и 8.6. Подмодули конечнопорождённого свободного модуля</h3>
+<div class="meta"><span>Билет 17</span><span>следствия формы Смита</span></div>
+<div class="theorem"><b>Следствие 8.5.</b> Для подмодуля <small class="code">N⊆R^n</small> существует базис <small class="code">u_1,…,u_n</small> модуля <small class="code">R^n</small> и элементы <small class="code">α_1|…|α_n</small> такие, что <small class="code">N=h u_1α_1,…,u_nα_n i</small>.
+          <br/><b>Следствие 8.6.</b> Всякий подмодуль конечнопорождённого свободного модуля над ОГИ свободен, и его ранг не превосходит ранга исходного модуля.</div>
+<ol class="steps">
+<li>Возьмём конечную систему образующих <small class="code">x_1,…,x_k</small> подмодуля <small class="code">N</small> и составим из них матрицу <small class="code">A=(x_1,…,x_k)</small>.</li>
+<li>По форме Смита существует <small class="code">BAC=(diag(α_1,…,α_n)0)</small>. Если <small class="code">u_i</small> — столбцы матрицы <small class="code">B^{-1}</small>, то
+            <div class="formula">\[AC=B^{-1}(BAC)=(u_1\alpha_1,\ldots,u_n\alpha_n,0,\ldots)\]</div>
+            Столбцы <small class="code">AC</small> порождают тот же подмодуль, что и столбцы <small class="code">A</small>, потому что <small class="code">C</small> обратима. Значит, <small class="code">N</small> порождается именно элементами <small class="code">u_iα_i</small>.</li>
+<li>Пусть ненулевых элементов среди <small class="code">α_i</small> ровно <small class="code">m</small>. Тогда векторы <small class="code">u_1α_1,…,u_mα_m</small> линейно независимы: если
+            <div class="formula">\[\sum_{i=1}^{m}u_i\alpha_ir_i=0\]</div>
+            то по независимости базиса <small class="code">u_i</small> имеем <small class="code">α_i r_i=0</small> для всех <small class="code">i</small>. Но <small class="code">R</small> — область целостности и <small class="code">α_i≠0</small>, следовательно, <small class="code">r_i=0</small>.</li>
+<li>Значит, эти векторы образуют базис <small class="code">N</small>; следовательно, <small class="code">N</small> свободен и <small class="code">rk N = m≤n</small>.</li>
+</ol>
+</article>
+<article class="proof" id="classification">
+<h3>Лемма 9.1, следствие 9.2 и теорема 9.3: классификация конечнопорождённых модулей над ОГИ</h3>
+<div class="meta"><span>Билет 18</span><span>основа для Фробениуса и модульного Жордана</span></div>
+<div class="theorem"><b>Теорема 9.3.</b> Любой конечнопорождённый модуль над ОГИ изоморфен прямой сумме неразложимых циклических модулей.</div>
+<details open=""><summary>Лемма 9.1: когда циклический модуль неприводим и неразложим</summary><div>
+            Для идеала <small class="code">I⊊R</small> модуль <small class="code">R/I</small> неприводим тогда и только тогда, когда <small class="code">I</small> максимален. Это следует из стандартного соответствия между подмодулями <small class="code">R/I</small> и идеалами <small class="code">J</small>, удовлетворяющими <small class="code">I⊆J⊆R</small>.
+            <br/><br/>
+            Модуль <small class="code">R/I</small> неразложим тогда и только тогда, когда идеал <small class="code">I</small> нельзя представить в виде произведения двух собственных взаимно простых идеалов. Если <small class="code">I=I_1I_2</small> и <small class="code">I_1+I_2=R</small>, то китайская теорема об остатках даёт изоморфизм
+            <div class="formula">\[R/I\cong R/I_1\oplus R/I_2\]</div>
+            Обратно, если <small class="code">R/I=M_1⊕M_2</small>, то, рассматривая проекции композиции <small class="code">R→R/I→M_j</small>, получаем идеалы <small class="code">I_j</small> и изоморфизм <small class="code">R/I \cong R/I_1 ⊕ R/I_2</small>, причём <small class="code">I=I_1∩I_2=I_1I_2</small> и <small class="code">I_1+I_2=R</small>.</div></details>
+<details><summary>Следствие 9.2: какие циклические модули неразложимы над ОГИ</summary><div>
+            Если <small class="code">q</small> необратим, то <small class="code">R/qR</small> неразложим тогда и только тогда, когда <small class="code">q=0</small> или <small class="code">q</small> ассоциирован степени неприводимого элемента. В самом деле, при разложении <small class="code">q=εp_1^{a_1}⋯p_s^{a_s}</small> с <small class="code">s≥2</small> китайская теорема об остатках немедленно даёт прямую сумму по различным простым множителям. Если же <small class="code">q	hicksim p^a</small>, то разложение в произведение взаимно простых собственных идеалов невозможно.</div></details>
+<details><summary>Доказательство существования в теореме 9.3</summary><div>
+<ol class="steps">
+<li>Выбираем эпиморфизм <small class="code">π:R^k→M</small> и обозначаем <small class="code">N=Ker π</small>. Тогда <small class="code">M\cong R^k/N</small>.</li>
+<li>По следствию 8.5 подмодуль <small class="code">N</small> имеет вид <small class="code">N=h u_1α_1,…,u_kα_k i</small> для некоторого базиса <small class="code">u_1,…,u_k</small> пространства <small class="code">R^k</small>.</li>
+<li>Рассматриваем гомоморфизм
+              <div class="formula">\[\begin{aligned}\rho:R^k&amp;\longrightarrow\bigoplus_{i=1}^{k}R/\alpha_iR,\\\rho\!\left(\sum_i u_i\beta_i\right)&amp;=(\beta_i+\alpha_iR)_{i=1}^{k}.\end{aligned}\]</div>
+              Его ядро в точности равно <small class="code">N</small>, следовательно,
+              <div class="formula">\[M\cong R^k/N\cong\bigoplus_{i=1}^{k}R/\alpha_iR\]</div></li>
+<li>Каждое ненулевое слагаемое <small class="code">R/α_iR</small> по следствию 9.2 раскладывается в прямую сумму модулей вида <small class="code">R/p^hR</small> и свободных слагаемых <small class="code">R</small> (случай <small class="code">α_i=0</small>). Эти модули и являются неразложимыми циклическими слагаемыми.</li>
+</ol>
+</div></details>
+</article>
+<article class="proof" id="uniqueness">
+<h3>Лемма 11.1 и единственность разложения</h3>
+<div class="meta"><span>Билет 19</span><span>инварианты ℓ_{p,k}</span></div>
+<div class="theorem"><b>Идея.</b> Нужно показать, что в разложении на прямую сумму модулей вида <small class="code">R/p^hR</small> числа и показатели этих слагаемых определяются самим модулем.</div>
+<ol class="steps">
+<li>Для неприводимого <small class="code">p</small> и <small class="code">k≥1</small> рассматриваем векторное пространство над полем <small class="code">R/pR</small>:
+            <div class="formula">\[p^{k-1}M/p^kM\]</div>
+            Его размерность обозначаем <small class="code">ℓ_{p,k}(M)</small>.</li>
+<li><b>Лемма 11.1.</b> Если <small class="code">M=R/p^nR</small>, то
+            <div class="formula">\[\ell_{p,k}(M)=\begin{cases}1,&amp;k\le n,\\0,&amp;k&gt;n.\end{cases}\]</div>
+            Если же <small class="code">q</small> не ассоциирован с <small class="code">p</small>, то для <small class="code">M=R/q^nR</small> имеем <small class="code">ℓ_{p,k}(M)=0</small>. Кроме того, размерности аддитивны по прямой сумме.</li>
+<li>Пусть <small class="code">b_{p,k}=ℓ_{p,k}(T(M))</small>, где <small class="code">T(M)</small> — подмодуль кручения. Тогда <small class="code">b_{p,k}</small> — это число слагаемых вида <small class="code">R/p^hR</small> с <small class="code">h≥k</small>.</li>
+<li>Следовательно, число слагаемых с точным показателем <small class="code">k</small> равно
+            <div class="formula">\[c_{p,k}=b_{p,k}-b_{p,k+1}\]</div>
+            Все эти числа являются инвариантами самого модуля, поэтому весь набор примарных циклических слагаемых определяется однозначно.</li>
+<li>Свободная часть определяется по фактору <small class="code">M/T(M)</small>, который изоморфен <small class="code">R^r</small>. Ранг свободного модуля уже известен как инвариант. Значит, определено и число свободных слагаемых.</li>
+</ol>
+</article>
+<article class="proof" id="frobenius">
+<h3>Теорема 10.1. Нормальная форма Фробениуса</h3>
+<div class="meta"><span>Билет 20</span><span>форма оператора через циклические модули</span></div>
+<div class="theorem"><b>Формулировка.</b> Для любого линейного оператора <small class="code">L:V→V</small> на конечномерном пространстве над полем <small class="code">F</small> существует базис, в котором матрица <small class="code">L</small> клеточно-диагональна с клетками Фробениуса по диагонали.</div>
+<ol class="steps">
+<li><b>Переход к модулю.</b> Рассматриваем <small class="code">V</small> как <small class="code">F[t]</small>-модуль, задав действие <small class="code">p·v=p(L)v</small>. Так как <small class="code">F[t]</small> — евклидово кольцо, оно является ОГИ. Модуль <small class="code">V</small> конечнопорождён: любой базис пространства <small class="code">V</small> над <small class="code">F</small> порождает его и как <small class="code">F[t]</small>-модуль.</li>
+<li><b>Классификация.</b> По теореме 9.3
+            <div class="formula">\[V\cong\bigoplus_jF[t]/(p_j)\]</div>
+            Свободных слагаемых <small class="code">F[t]</small> быть не может, потому что они бесконечномерны как векторные пространства над <small class="code">F</small>, а <small class="code">V</small> конечномерно.</li>
+<li><b>Одна клетка.</b> Рассмотрим одно слагаемое <small class="code">F[t]/(p)</small>, где
+            <div class="formula">\[p(t)=t^d-a_dt^{d-1}-\cdots-a_2t-a_1\]</div>
+            Классы <small class="code">1,t,…,t^{d-1}</small> образуют базис: это даёт деление с остатком.</li>
+<li><b>Матрица действия <small class="code">L</small>.</b> Для <small class="code">k&lt;d−1</small> имеем <small class="code">L(t^k)=t^{k+1}</small>. А для последнего базисного вектора:
+            <div class="formula">\[L(t^{d-1})=t^d=a_1+a_2t+\cdots+a_dt^{d-1}\pmod{p(t)}\]</div>
+            Значит, в выбранном базисе матрица действия имеет ровно вид клетки Фробениуса.</li>
+<li>Объединяя базисы всех циклических слагаемых, получаем блочно-диагональную матрицу из клеток Фробениуса.</li>
+</ol>
+<div class="note">В формулировке Степанова здесь не утверждается единственность: выбраны просто циклические слагаемые, а не обязательно неразложимые.</div>
+</article>
+<article class="proof" id="jordan-module">
+<h3>Жорданова форма: второе доказательство (через классификацию модулей)</h3>
+<div class="meta"><span>Билет 21</span><span>существование + единственность</span><span>модульная ветка</span></div>
+<div class="theorem"><b>Теорема.</b> Пусть <small class="code">V</small> конечномерно над алгебраически замкнутым полем <small class="code">F</small>. Тогда существует базис, в котором матрица <small class="code">L</small> имеет жорданову форму; набор блоков определяется однозначно с точностью до перестановки.</div>
+<ol class="steps">
+<li><b>Снова делаем из <small class="code">V</small> модуль над <small class="code">F[t]</small>.</b> Действие задаётся равенством <small class="code">p·v=p(L)v</small>.</li>
+<li><b>Применяем классификацию.</b> Так как поле алгебраически замкнуто, каждый неприводимый многочлен имеет вид <small class="code">t−λ</small>. По следствию 9.2 неразложимые циклические слагаемые имеют вид
+            <div class="formula">\[F[t]/\bigl((t-\lambda)^k\bigr)\]</div></li>
+<li><b>Строим базис на одном слагаемом.</b> В модуле <small class="code">M=F[t]/(t-λ)^kF[t]</small> берём классы
+            <div class="formula">\[v_i=(t-\lambda)^{k-i},\qquad i=1,\ldots,k\]</div>
+            Тогда
+            <div class="formula">\[\begin{cases}(t-\lambda)v_1=0,\\(t-\lambda)v_i=v_{i-1},&amp;i&gt;1.\end{cases}\]</div>
+            Но действие умножения на <small class="code">t</small> — это и есть оператор <small class="code">L</small>. Следовательно,
+            <div class="formula">\[\begin{cases}L(v_1)=\lambda v_1,\\L(v_i)=v_{i-1}+\lambda v_i,&amp;i&gt;1.\end{cases}\]</div>
+            То есть матрица ограничения <small class="code">L|_M</small> в базисе <small class="code">(v_1,…,v_k)</small> равна жорданову блоку <small class="code">J_k(λ)</small>.</li>
+<li><b>Собираем все блоки.</b> Каждое циклическое слагаемое даёт один жорданов блок, а их прямая сумма даёт жорданову форму всего оператора.</li>
+<li><b>Единственность.</b> Она следует из билета 19: набор неразложимых циклических слагаемых <small class="code">F[t]/(t-λ)^kF[t]</small> определяется модулем однозначно, а каждому такому слагаемому соответствует ровно один блок <small class="code">J_k(λ)</small>.</li>
+</ol>
+<details><summary>Чем этот путь отличается от первого?</summary><div>В первом доказательстве сначала разлагается пространство на корневые подпространства, а потом внутри каждого строятся цепочки нильпотентного оператора. Во втором доказательстве разложение и сами цепочки возникают одновременно из структуры <small class="code">F[t]</small>-модуля. Поэтому модульный путь сразу даёт и существование, и естественное объяснение единственности через инварианты разложения.</div></details>
+</article>
+</div>
+</div>
+</section>
+</main>
+<footer class="wrap">
+  Основа: А. В. Степанов, билеты 13–21 и соответствующие §§ конспекта. Доказательство теоремы 3.2 о нильпотентных цепочках отмечено как дополнение: в конспекте этот шаг формулируется без полного доказательства.
+</footer>
+</body>
+</html>
